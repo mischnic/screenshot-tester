@@ -1,0 +1,23 @@
+{
+  "name": "screenshot-tester",
+  "version": "0.1.0",
+  "description": "Test for UI regressions",
+  "repository": "https://github.com/mischnic/screenshot-tester.git",
+  "bugs": {
+    "url": "https://github.com/mischnic/screenshot-tester/issues"
+  },
+  "author": "Niklas Mischkulnig",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js",
+    "lint": "prettier --use-tabs --tab-width=4 --print-width 1000 --write index.js"
+  },
+  "devDependencies": {
+    "looks-same": "^3.3.0"
+  },
+  "dependencies": {
+    "prettier": "^1.12.1",
+    "prompt-confirm": "^1.2.0"
+  }
+}
