@@ -26,9 +26,9 @@ if (!fs.existsSync("tmp")) {
 
 async function screenshot(title, filename) {
 	if (process.platform === "darwin") {
-		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, "node", "-t", title, "-f", `tmp/${filename}`]);
+		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, "node", "-t", title, "-f", filename]);
 	} else if (process.platform === "win32") {
-		return execFileSync(`${__dirname}/lib/screenshot-cmd/screenshot.exe`, ["-wt", title, "-o", `tmp/"${filename}"`]);
+		return execFileSync(`${__dirname}\\lib\\screenshot-cmd\\screenshot.exe`, ["-wt", title, "-o", filename]);
 	} else {
 		throw Error("Platform not supported!");
 	}
@@ -48,8 +48,8 @@ module.exports = async function compare(file, title) {
 		const temp = `tmp/${filename}.png`;
 
 		proc = spawn("node", [file]);
-		await wait(80);
-		await screenshot(title, filename + ".png");
+		await wait(process.platform === "win32" ? 600 : 80);
+		await screenshot(title, temp);
 
 		proc.kill("SIGINT");
 
@@ -57,7 +57,7 @@ module.exports = async function compare(file, title) {
 			console.log("Creating new test:", filename + ".png");
 			fs.copyFileSync(temp, reference);
 		} else {
-			const same = await looksSame(reference, temp);
+			const same = await looksSame(reference, temp, {tolerance: 60});
 
 			if (same) {
 				console.log(`passed: ${path.basename(file)} - "${title}"`);
@@ -85,10 +85,10 @@ module.exports = async function compare(file, title) {
 		}
 		// }
 	} catch (e) {
+		if (proc) {
+			proc.kill("SIGINT");
+		}
 		console.error(`error: ${file} - "${title}"`);
 		console.error("\t", e.message);
-		// if(proc){
-		// 	proc.kill('SIGINT');
-		// }
 	}
 };
