@@ -57,7 +57,7 @@ module.exports = async function compare(file, title) {
 			console.log("Creating new test:", filename + ".png");
 			fs.copyFileSync(temp, reference);
 		} else {
-			const same = await looksSame(reference, temp, {tolerance: 60});
+			const same = await looksSame(reference, temp, process.platform === "win32" ? { tolerance: 60 } : {});
 
 			if (same) {
 				console.log(`passed: ${path.basename(file)} - "${title}"`);
