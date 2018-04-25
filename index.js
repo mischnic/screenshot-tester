@@ -11,7 +11,7 @@ const wait = t =>
 		setTimeout(() => res(), t);
 	});
 
-const interactive = process.argv[2] === "--interactive" || process.argv[2] === "-i";
+let interactive = process.argv[2] === "--interactive" || process.argv[2] === "-i";
 
 if (!fs.existsSync("reference")) {
 	fs.mkdirSync("reference");
@@ -24,9 +24,9 @@ if (!fs.existsSync("tmp")) {
 	fs.mkdirSync("tmp");
 }
 
-async function screenshot(title, filename) {
+async function screenshot(title, filename, useNode, file) {
 	if (process.platform === "darwin") {
-		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, "node", "-t", title, "-f", filename]);
+		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, useNode ? "node" : path.basename(file), "-t", title, "-f", filename]);
 	} else if (process.platform === "win32") {
 		return execFileSync(`${__dirname}\\lib\\screenshot-cmd\\screenshot.exe`, ["-wt", title, "-o", filename]);
 	} else {
@@ -34,61 +34,69 @@ async function screenshot(title, filename) {
 	}
 }
 
-module.exports = async function compare(file, title) {
-	let proc;
-	try {
-		// for(let i = 0; i < 1; i++){
+module.exports = function(outDir = ".", useNode = true, interactiveFlag) {
+	if (typeof interactiveFlag !== "undefined") {
+		interactive = false;
+	}
 
-		const filename = path
-			.basename(file)
-			.replace(/\.js$/, "")
-			.replace(/\s/g, "_"); //+"_"+i
+	return async function compare(file, title, delay) {
+		let proc;
+		try {
+			// for(let i = 0; i < 1; i++){
 
-		const reference = `reference/${process.platform}/${filename}.png`;
-		const temp = `tmp/${filename}.png`;
+			const filename = path.basename(file).replace(/\s/g, "_"); //+"_"+i
 
-		proc = spawn("node", [file]);
-		await wait(process.platform === "win32" ? 600 : 80);
-		await screenshot(title, temp);
+			const reference = `${outDir}/reference/${process.platform}/${filename}.png`;
+			const temp = `${outDir}/tmp/${filename}.png`;
 
-		proc.kill("SIGINT");
-
-		if (!fs.existsSync(reference)) {
-			console.log("Creating new test:", filename + ".png");
-			fs.copyFileSync(temp, reference);
-		} else {
-			const same = await looksSame(reference, temp, process.platform === "win32" ? { tolerance: 60 } : {});
-
-			if (same) {
-				console.log(`passed: ${path.basename(file)} - "${title}"`);
+			if (useNode) {
+				proc = spawn("node", [file]);
 			} else {
-				console.log(`failed: ${path.basename(file)} - "${title}" didn't pass, see "tmp/${filename}_diff.png"`);
-				await createDiff({
-					reference: reference,
-					current: temp,
-					diff: `tmp/${filename}_diff.png`,
-					highlightColor: "#ff0000"
-				});
+				proc = spawn(file);
+			}
+			await wait(delay + (process.platform === "win32" ? 600 : 100));
+			await screenshot(title, temp, useNode, file);
 
-				if (interactive) {
-					const answer = await new Confirm({
-						message: `Do you want to update "${path.basename(file)}" ?`,
-						default: false
-					}).run();
+			proc.kill("SIGINT");
 
-					if (answer) {
-						fs.copyFileSync(temp, reference);
-						console.log(`\tUpdated: ${path.basename(file)}`);
+			if (!fs.existsSync(reference)) {
+				console.log("Creating new test:", filename + ".png");
+				fs.copyFileSync(temp, reference);
+			} else {
+				const same = await looksSame(reference, temp, process.platform === "win32" ? { tolerance: 60 } : {});
+
+				if (same) {
+					console.log(`passed: ${path.basename(file)} - "${title}"`);
+				} else {
+					console.log(`failed: ${path.basename(file)} - "${title}" didn't pass, see "tmp/${filename}_diff.png"`);
+					await createDiff({
+						reference: reference,
+						current: temp,
+						diff: temp.replace(/\.png$/, "_diff.png"),
+						highlightColor: "#ff0000"
+					});
+
+					if (interactive) {
+						const answer = await new Confirm({
+							message: `Do you want to update "${path.basename(file)}" ?`,
+							default: false
+						}).run();
+
+						if (answer) {
+							fs.copyFileSync(temp, reference);
+							console.log(`\tUpdated: ${path.basename(file)}`);
+						}
 					}
 				}
 			}
+			// }
+		} catch (e) {
+			if (proc) {
+				proc.kill("SIGINT");
+			}
+			console.error(`error: ${file} - "${title}"`);
+			console.error("\t", e.message);
+			if (e.stdout) console.error("\t", e.stdout.toString("utf8"));
 		}
-		// }
-	} catch (e) {
-		if (proc) {
-			proc.kill("SIGINT");
-		}
-		console.error(`error: ${file} - "${title}"`);
-		console.error("\t", e.message);
-	}
+	};
 };

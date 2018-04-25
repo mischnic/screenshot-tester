@@ -1,10 +1,14 @@
-const compare = require(".");
+const test = require(".")();
 
 (async function(){
-	await compare("../libui-node/examples/area-adv.js", "libui textDrawArea Example");
-	await compare("../libui-node/examples/text.js", "libui textDrawArea Example");
-	// await compare("../libui-node/examples/control-gallery.js", "Control Gallery");
-	await compare("../libui-node/examples/forms.js", "Forms window");
-	await compare("../libui-node/examples/grid.js", "Forms window");
-	await compare("../libui-node/examples/node-pad.js", "Node Pad");
+	await require(".")('.', false)("../libui/build/out/test", "Main Window");
+
+	await test("../libui-node/examples/area-adv.js", "libui textDrawArea Example");
+	await test("../libui-node/examples/text.js", "libui textDrawArea Example");
+	// await test("../libui-node/examples/core-api.js", "Test window");
+	// await test("../libui-node/examples/control-gallery.js", "Control Gallery");
+	await test("../libui-node/examples/forms.js", "Forms window");
+	await test("../libui-node/examples/grid.js", "Forms window");
+	await test("../libui-node/examples/node-pad.js", "Node Pad");
+
 })();
