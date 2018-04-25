@@ -1,7 +1,7 @@
-const test = require(".")();
+const test = require(".")("out");
 
 (async function(){
-	await require(".")('.', false)("../libui/build/out/test", "Main Window");
+	await require(".")("out", false)("../libui/build/out/test", "Main Window");
 
 	await test("../libui-node/examples/area-adv.js", "libui textDrawArea Example");
 	await test("../libui-node/examples/text.js", "libui textDrawArea Example");

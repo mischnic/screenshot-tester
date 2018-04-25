@@ -15,7 +15,7 @@ const test = require("screenshot-tester")();
 or for native apps:
 
 ```js
-const test = require("screenshot-tester")(false);
+const test = require("screenshot-tester")(".", false);
 
 (async function(){
     await test("app", "The Window Title");
@@ -27,7 +27,19 @@ This will:
 - Take a screenshot of the window with the specified title
 - Close the app
 - Compare with or create a new reference screenshot
-- If `-i` is passed on the command line or `true` as the second argument to the curried `require`, a failed test cause a prompt asking whether to update the reference.
+- If `-i` is passed on the command line or `true` as the second argument to the curried `require`, a failed test will cause a prompt asking whether to update the reference screenshot.
+
+
+A failed test will generate a diff file, hightlighting the differing areas in red:
+
+```
+─ outDir ('.')
+  ├─ reference
+  │  └─ my_example.js.png
+  └─ tmp
+     ├─ my_example.js.png
+     └─ my_example.js_diff.png
+```
 
 ## Reference
 

@@ -13,17 +13,6 @@ const wait = t =>
 
 let interactive = process.argv[2] === "--interactive" || process.argv[2] === "-i";
 
-if (!fs.existsSync("reference")) {
-	fs.mkdirSync("reference");
-}
-if (!fs.existsSync("reference/" + process.platform)) {
-	fs.mkdirSync("reference/" + process.platform);
-}
-
-if (!fs.existsSync("tmp")) {
-	fs.mkdirSync("tmp");
-}
-
 async function screenshot(title, filename, useNode, file) {
 	if (process.platform === "darwin") {
 		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, useNode ? "node" : path.basename(file), "-t", title, "-f", filename]);
@@ -39,6 +28,20 @@ module.exports = function(outDir = ".", useNode = true, interactiveFlag) {
 		interactive = false;
 	}
 
+	if (!fs.existsSync(`${outDir}`)) {
+		fs.mkdirSync(`${outDir}`);
+	}
+	if (!fs.existsSync(`${outDir}/reference`)) {
+		fs.mkdirSync(`${outDir}/reference`);
+	}
+	if (!fs.existsSync(`${outDir}/reference/` + process.platform)) {
+		fs.mkdirSync(`${outDir}/reference/` + process.platform);
+	}
+
+	if (!fs.existsSync(`${outDir}/temp`)) {
+		fs.mkdirSync(`${outDir}/temp`);
+	}
+
 	return async function compare(file, title, additionalDelay = 0) {
 		let proc;
 		try {
@@ -47,7 +50,7 @@ module.exports = function(outDir = ".", useNode = true, interactiveFlag) {
 			const filename = path.basename(file).replace(/\s/g, "_"); //+"_"+i
 
 			const reference = `${outDir}/reference/${process.platform}/${filename}.png`;
-			const temp = `${outDir}/tmp/${filename}.png`;
+			const temp = `${outDir}/temp/${filename}.png`;
 
 			if (useNode) {
 				proc = spawn("node", [file]);
