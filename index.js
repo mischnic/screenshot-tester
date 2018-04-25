@@ -39,7 +39,7 @@ module.exports = function(outDir = ".", useNode = true, interactiveFlag) {
 		interactive = false;
 	}
 
-	return async function compare(file, title, delay) {
+	return async function compare(file, title, additionalDelay = 0) {
 		let proc;
 		try {
 			// for(let i = 0; i < 1; i++){
@@ -54,7 +54,7 @@ module.exports = function(outDir = ".", useNode = true, interactiveFlag) {
 			} else {
 				proc = spawn(file);
 			}
-			await wait(delay + (process.platform === "win32" ? 600 : 100));
+			await wait(additionalDelay + (process.platform === "win32" ? 600 : 100));
 			await screenshot(title, temp, useNode, file);
 
 			proc.kill("SIGINT");
