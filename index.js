@@ -11,11 +11,9 @@ const wait = t =>
 		setTimeout(() => res(), t);
 	});
 
-let interactive = process.argv[2] === "--interactive" || process.argv[2] === "-i";
-
-async function screenshot(title, filename, useNode, file) {
+async function screenshot(title, filename, raw, file) {
 	if (process.platform === "darwin") {
-		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, useNode ? "node" : path.basename(file), "-t", title, "-f", filename]);
+		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, raw ? path.basename(file) : "node", "-t", title, "-f", filename]);
 	} else if (process.platform === "win32") {
 		return execFileSync(`${__dirname}\\lib\\screenshot-cmd\\screenshot.exe`, ["-wt", title, "-o", filename]);
 	} else {
@@ -23,11 +21,7 @@ async function screenshot(title, filename, useNode, file) {
 	}
 }
 
-module.exports = function(outDir = ".", useNode = true, interactiveFlag) {
-	if (typeof interactiveFlag !== "undefined") {
-		interactive = false;
-	}
-
+module.exports = function({ outDir = ".", raw = false, interactive = false } = {}) {
 	if (!fs.existsSync(`${outDir}`)) {
 		fs.mkdirSync(`${outDir}`);
 	}
@@ -42,7 +36,8 @@ module.exports = function(outDir = ".", useNode = true, interactiveFlag) {
 		fs.mkdirSync(`${outDir}/temp`);
 	}
 
-	return async function compare(file, title, additionalDelay = 0) {
+	return async function compare(file, title, { delay, raw: rawLocal } = {}) {
+		rawLocal = typeof rawLocal === "undefined" ? raw : rawLocal;
 		let proc;
 		try {
 			// for(let i = 0; i < 1; i++){
@@ -52,13 +47,13 @@ module.exports = function(outDir = ".", useNode = true, interactiveFlag) {
 			const reference = `${outDir}/reference/${process.platform}/${filename}.png`;
 			const temp = `${outDir}/temp/${filename}.png`;
 
-			if (useNode) {
-				proc = spawn("node", [file]);
-			} else {
+			if (rawLocal) {
 				proc = spawn(file);
+			} else {
+				proc = spawn("node", [file]);
 			}
-			await wait(additionalDelay + (process.platform === "win32" ? 600 : 100));
-			await screenshot(title, temp, useNode, file);
+			await wait(delay + (process.platform === "win32" ? 600 : 100));
+			await screenshot(title, temp, rawLocal, file);
 
 			proc.kill("SIGINT");
 
@@ -71,7 +66,7 @@ module.exports = function(outDir = ".", useNode = true, interactiveFlag) {
 				if (same) {
 					console.log(`passed: ${path.basename(file)} - "${title}"`);
 				} else {
-					console.log(`failed: ${path.basename(file)} - "${title}" didn't pass, see "tmp/${filename}_diff.png"`);
+					console.log(`failed: ${path.basename(file)} - "${title}" didn't pass, see ${temp.replace(/\.png$/, "_diff.png")}`);
 					await createDiff({
 						reference: reference,
 						current: temp,

@@ -1,7 +1,9 @@
-const test = require(".")("out");
+let interactive = process.argv[2] === "--interactive" || process.argv[2] === "-i";
+
+const test = require(".")({outDir: "out", interactive});
 
 (async function(){
-	await require(".")("out", false)("../libui/build/out/test", "Main Window");
+	await test("../libui/build/out/test", "Main Window", {raw: true});
 
 	await test("../libui-node/examples/area-adv.js", "libui textDrawArea Example");
 	await test("../libui-node/examples/text.js", "libui textDrawArea Example");

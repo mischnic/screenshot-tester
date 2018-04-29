@@ -15,7 +15,7 @@ const test = require("screenshot-tester")();
 or for native apps:
 
 ```js
-const test = require("screenshot-tester")(".", false);
+const test = require("screenshot-tester")({raw: true});
 
 (async function(){
     await test("app", "The Window Title");
@@ -23,11 +23,10 @@ const test = require("screenshot-tester")(".", false);
 ```
 
 This will:
-- Run `node my_example.js` or `app`
-- Take a screenshot of the window with the specified title
-- Close the app
-- Compare with or create a new reference screenshot
-- If `-i` is passed on the command line or `true` as the second argument to the curried `require`, a failed test will cause a prompt asking whether to update the reference screenshot.
+- Run `node my_example.js` or `app`.
+- Take a screenshot of the window with the specified title.
+- Close the app.
+- Compare with or create a new reference screenshot.
 
 
 A failed test will generate a diff file, hightlighting the differing areas in red:
@@ -44,10 +43,27 @@ A failed test will generate a diff file, hightlighting the differing areas in re
 ## Reference
 
 ```js
-const test = require("screenshot-tester")(outDirPath = ".", useNode = true, interactiveFlag);
+const test = require("screenshot-tester")({
+        outDir = ".",
+        raw = false,
+        interactive = false
+    });
 
-test(file, title, additionalDelay);
+test(file, title, {delay = 0, raw = false});
 ```
+
+### Parameters
+
+#### `require("screenshot-tester")`
+- `outDir`: The folder in which the screenshots will be saved (see above).
+- `raw`: Set to `true` to run a binary instead of a node script. Here it is applied to all following `test()` calls.
+- `interactive`: Whether to prompt the user if the reference image should be updated if a test failed.
+
+### test()
+- `file`: The node script/binary to test.
+- `title`: The title of the window to be captured.
+- `delay`: Additional delay after starting the application (in ms).
+- `raw`: As above, but only for this call.
 
 ## Bundled projects
 
