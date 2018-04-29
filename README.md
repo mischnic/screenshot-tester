@@ -55,13 +55,13 @@ test(file, title, {delay = 0, raw = false});
 
 ### Parameters
 
-#### `require("screenshot-tester")`
+#### `require("screenshot-tester")(...)`
 - `outDir`: The folder in which the screenshots will be saved (see above).
 - `raw`: Set to `true` to run a binary instead of a node script. It is applied to all following `test()` calls.
 - `interactive`: Whether to prompt the user if the reference image should be updated if a test failed.
 - `delay`: Additional delay after starting the application (in ms). It is applied to all following `test()` calls.
 
-### test()
+### `test(...)`
 - `file`: The node script/binary to test.
 - `title`: The title of the window to be captured.
 - `delay`: As above, but only for this call.

@@ -8,16 +8,16 @@ const looksSame = promisify(require("looks-same"));
 const Confirm = require("prompt-confirm");
 const chalk = require("chalk");
 
-function getOSVersion(){
-	if(process.platform == "win32"){
+function getOSVersion() {
+	if (process.platform == "win32") {
 		// https://stackoverflow.com/a/44916050/2352201
 		const versions = os.release().split(".");
-		switch(versions[0]){
+		switch (versions[0]) {
 			case "10":
 				return "win10";
 
 			case "6":
-				switch(versions[1]){
+				switch (versions[1]) {
 					case "3":
 						return "win81";
 					case "2":
@@ -30,7 +30,7 @@ function getOSVersion(){
 				break;
 
 			case "5":
-				switch(versions[1]){
+				switch (versions[1]) {
 					case "1":
 						return "winXP";
 					case "0":
@@ -59,7 +59,7 @@ async function screenshot(title, filename, raw, file) {
 	}
 }
 
-module.exports = function({ outDir = ".", raw = false, interactive = false, delay = 0} = {}) {
+module.exports = function({ outDir = ".", raw = false, interactive = false, delay = 0 } = {}) {
 	const referenceFolder = `${outDir}/reference/${getOSVersion()}`;
 	const tempFolder = `${outDir}/temp`;
 
@@ -94,7 +94,23 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				proc = spawn("node", [file]);
 			}
 			await wait(delayLocal + (process.platform === "win32" ? 600 : 100));
-			await screenshot(title, temp, rawLocal, file);
+
+			async function makeScreenshot(){
+				return await screenshot(title, temp, rawLocal, file).catch(e => {
+					if (e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
+						return false;
+					} else {
+						throw e;
+					}
+				})
+			}
+
+			if(await makeScreenshot() === false){
+				console.log(`${chalk.yellow("Retrying")}: ${filename}`);
+				if(await makeScreenshot() === false){
+					throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?")
+				}
+			}
 
 			proc.kill("SIGINT");
 
