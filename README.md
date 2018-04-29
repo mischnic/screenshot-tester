@@ -46,7 +46,8 @@ A failed test will generate a diff file, hightlighting the differing areas in re
 const test = require("screenshot-tester")({
         outDir = ".",
         raw = false,
-        interactive = false
+        interactive = false,
+        delay = 0
     });
 
 test(file, title, {delay = 0, raw = false});
@@ -56,13 +57,14 @@ test(file, title, {delay = 0, raw = false});
 
 #### `require("screenshot-tester")`
 - `outDir`: The folder in which the screenshots will be saved (see above).
-- `raw`: Set to `true` to run a binary instead of a node script. Here it is applied to all following `test()` calls.
+- `raw`: Set to `true` to run a binary instead of a node script. It is applied to all following `test()` calls.
 - `interactive`: Whether to prompt the user if the reference image should be updated if a test failed.
+- `delay`: Additional delay after starting the application (in ms). It is applied to all following `test()` calls.
 
 ### test()
 - `file`: The node script/binary to test.
 - `title`: The title of the window to be captured.
-- `delay`: Additional delay after starting the application (in ms).
+- `delay`: As above, but only for this call.
 - `raw`: As above, but only for this call.
 
 ## Bundled projects

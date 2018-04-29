@@ -17,6 +17,7 @@
     "looks-same": "^3.3.0"
   },
   "dependencies": {
+    "chalk": "^2.4.1",
     "prettier": "^1.12.1",
     "prompt-confirm": "^1.2.0"
   }
