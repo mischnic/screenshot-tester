@@ -59,6 +59,8 @@ async function screenshot(title, filename, raw, file) {
 	}
 }
 
+tests = [];
+
 module.exports = function({ outDir = ".", raw = false, interactive = false, delay = 0 } = {}) {
 	const referenceFolder = `${outDir}/reference/${getOSVersion()}`;
 	const tempFolder = `${outDir}/temp`;
@@ -76,14 +78,13 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		fs.mkdirSync(tempFolder);
 	}
 
-	return async function compare(file, title, { delay: delayLocal, raw: rawLocal } = {}) {
+	async function compare(file, title, { delay: delayLocal, raw: rawLocal } = {}) {
 		rawLocal = typeof rawLocal === "undefined" ? raw : rawLocal;
 		delayLocal = typeof delayLocal === "undefined" ? delay : delayLocal;
 		let proc;
+		const filename = path.basename(file).replace(/\s/g, "_"); //+"_"+i
 		try {
 			// for(let i = 0; i < 1; i++){
-
-			const filename = path.basename(file).replace(/\s/g, "_"); //+"_"+i
 
 			const reference = `${referenceFolder}/${filename}.png`;
 			const temp = `${tempFolder}/${filename}.png`;
@@ -95,20 +96,20 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 			}
 			await wait(delayLocal + (process.platform === "win32" ? 600 : 100));
 
-			async function makeScreenshot(){
+			async function makeScreenshot() {
 				return await screenshot(title, temp, rawLocal, file).catch(e => {
 					if (e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
 						return false;
 					} else {
 						throw e;
 					}
-				})
+				});
 			}
 
-			if(await makeScreenshot() === false){
+			if ((await makeScreenshot()) === false) {
 				console.log(`${chalk.yellow("Retrying")}: ${filename}`);
-				if(await makeScreenshot() === false){
-					throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?")
+				if ((await makeScreenshot()) === false) {
+					throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?");
 				}
 			}
 
@@ -122,8 +123,10 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 
 				if (same) {
 					console.log(`${chalk.green("Passed")}: ${path.basename(file)} - "${title}"`);
+					tests.push(["passed", file, filename, title]);
 				} else {
-					console.log(`${chalk.red("Failed")}: ${path.basename(file)} - "${title}" didn't pass, see ${temp.replace(/\.png$/, "_diff.png")}`);
+					console.log(`${chalk.red("Failed")}: ${path.basename(file)} - "${title}", see ${temp.replace(/\.png$/, "_diff.png")}`);
+					tests.push(["failed", file, filename, title]);
 					await createDiff({
 						reference: reference,
 						current: temp,
@@ -152,6 +155,107 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 			console.error(chalk.red(`error: ${file} - "${title}"`));
 			console.error("\t", e.message);
 			if (e.stdout) console.error("\t", e.stdout.toString("utf8"));
+			tests.push(["error", file, filename, title]);
 		}
+	}
+
+	compare.generateHTML = function() {
+		const html = `<!DOCTYPE html>
+	<html>
+	<head>
+		<title></title>
+		<style>
+			body{
+				font-family: sans-serif;
+			}
+
+			.center {
+				text-align: center;
+			}
+
+			a:visited {
+				color: black;
+			}
+
+			table {
+				border-spacing: 0;
+				width: 100%;
+			}
+
+			td, th {
+				padding: 10px;
+				text-align: center;
+			}
+
+			tr.failed > td:last-child > div > img:last-child {
+				display: none;
+			}
+
+			tr.failed > td:last-child > div:hover > img:first-child {
+				display: none;
+			}
+
+			tr.failed > td:last-child > div:hover > img:last-child {
+				display: initial;
+			}
+
+			.passed {
+				background-color: limegreen;
+			}
+
+			.failed, .error {
+				background-color: orangered;
+			}
+
+		</style>
+	</head>
+	<body>
+		<h1 class="center">
+			<a href="https://github.com/mischnic/screenshot-tester">screenshot-tester</a> report
+		</h1>
+		<div class="center">
+			Hover over the screenshots on the right to highlight the differing areas in red.
+		</div>
+		<br>
+		<table>
+			<tbody>
+				<tr>
+					<th>Reference</th>
+					<th>Test result</th>
+				</tr>
+				${tests
+					.map(([status, file, filename, title]) => {
+						if (status === "passed" || status === "error") {
+							return `
+						<tr class="${status}">
+							<td colspan="2">
+								<img src="${referenceFolder}/${filename}.png">
+							</td>
+						</tr>`;
+						} else if (status === "failed") {
+							return `
+						<tr class="${status}">
+							<td>
+								<img src="${referenceFolder}/${filename}.png">
+							</td>
+							<td>
+								<div>
+									<img src="${tempFolder}/${filename}.png">
+									<img src="${tempFolder}/${filename}_diff.png">
+								</div>
+							</td>
+						</tr>`;
+						}
+					})
+					.join("\n")}
+			</tbody>
+		</table>
+	</body>
+	</html>
+	`;
+		fs.writeFileSync(`${outDir}/report.html`, html);
+		console.log(chalk.magenta(`Generated HTML report: ${outDir}/report.html`));
 	};
+
+	return compare;
 };

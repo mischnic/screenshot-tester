@@ -14,4 +14,5 @@ const test = require("..")({outDir: __dirname+"/snapshots", interactive});
 	await test("../libui-node/examples/grid.js", "Forms window");
 	await test("../libui-node/examples/node-pad.js", "Node Pad");
 
+	test.generateHTML();
 })();
