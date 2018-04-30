@@ -135,7 +135,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				console.log(`${chalk.yellow("Creating new test")}: ${filename}.png`);
 				fs.copyFileSync(temp, reference);
 			} else {
-				const same = await looksSame(reference, temp, process.platform === "win32" ? { tolerance: 60 } : {});
+				const same = await looksSame(reference, temp, { tolerance: 60 });
 				if (same) {
 					console.log(`${chalk.green("Passed")}: ${path.basename(file)} - "${title}"`);
 					tests.push(["passed", file, filename, title]);
