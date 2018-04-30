@@ -257,5 +257,14 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		console.log(chalk.magenta(`Generated HTML report: ${outDir}/report.html`));
 	};
 
+	compare.result = function(){
+		for(const [status, file, filename, title] of tests){
+			if(status !== "passed"){
+				return 1;
+			}
+		}
+		return 0;
+	}
+
 	return compare;
 };
