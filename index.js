@@ -97,8 +97,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				proc = spawn("node", [file]);
 			}
 			proc.stderr.on("data", function(buf) {
-				const d = buf.toString("utf8");
-				if (d.indexOf("get 0x0") === -1) {
+				const d = buf.toString("utf8").trim();
+				if (d.indexOf("get 0x0") === -1 || d.split("\n").length > 1) {
 					console.error(chalk.red(d));
 				}
 			});
@@ -141,7 +141,6 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				fs.copyFileSync(temp, reference);
 			} else {
 				const same = await looksSame(reference, temp, { tolerance });
-				console.log(reference, temp);
 				if (same) {
 					console.log(`${chalk.green("Passed")}: ${path.basename(file)} - "${title}"`);
 					tests.push(["passed", file, filename, title]);
