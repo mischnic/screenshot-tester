@@ -98,7 +98,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 
 			async function makeScreenshot() {
 				return await screenshot(title, temp, rawLocal, file).catch(e => {
-					if (e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
+					if (e.stdout && e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
 						return false;
 					} else {
 						throw e;
