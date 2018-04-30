@@ -30,7 +30,7 @@ before_script:
 script:
   - node index.js
 after_script:
-  - cd snapshots && ../../node_modules/.bin/now-travis
+  - cd snapshots && npx now --token $NOW_TOKEN
 
 env:
   global:
