@@ -8,6 +8,8 @@ const looksSame = promisify(require("looks-same"));
 const Confirm = require("prompt-confirm");
 const chalk = require("chalk");
 
+const tolerance = 7.5;
+
 function getOSVersion() {
 	if (process.platform == "win32") {
 		// https://stackoverflow.com/a/44916050/2352201
@@ -94,9 +96,9 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 			} else {
 				proc = spawn("node", [file]);
 			}
-			proc.stderr.on('data', function(buf) {
+			proc.stderr.on("data", function(buf) {
 				const d = buf.toString("utf8");
-				if(d.indexOf("get 0x0") === -1){
+				if (d.indexOf("get 0x0") === -1) {
 					console.error(chalk.red(d));
 				}
 			});
@@ -105,18 +107,18 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 
 			function makeScreenshot(retry = true) {
 				let d;
-				try{
+				try {
 					return screenshot(title, temp, rawLocal, file);
-				} catch(e){
+				} catch (e) {
 					if (e.stdout && e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
-						if(retry) {
+						if (retry) {
 							console.log(`${chalk.yellow("Retrying")}: ${filename}`);
 							return makeScreenshot(false);
 						} else {
 							return false;
 						}
 					} else {
-						console.log(e)
+						console.log(e);
 						throw e;
 					}
 				}
@@ -126,7 +128,10 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 			if (screenshotOutput === false) {
 				throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?");
 			} else {
-				console.log(screenshotOutput.toString("utf8"));
+				const d = screenshotOutput.toString("utf8");
+				if (d) {
+					console.log(d);
+				}
 			}
 
 			proc.kill("SIGINT");
@@ -135,7 +140,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				console.log(`${chalk.yellow("Creating new test")}: ${filename}.png`);
 				fs.copyFileSync(temp, reference);
 			} else {
-				const same = await looksSame(reference, temp, { tolerance: 60 });
+				const same = await looksSame(reference, temp, { tolerance });
+				console.log(reference, temp);
 				if (same) {
 					console.log(`${chalk.green("Passed")}: ${path.basename(file)} - "${title}"`);
 					tests.push(["passed", file, filename, title]);
@@ -146,7 +152,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 						reference: reference,
 						current: temp,
 						diff: temp.replace(/\.png$/, "_diff.png"),
-						highlightColor: "#ff0000"
+						highlightColor: "#ff0000",
+						tolerance
 					});
 
 					if (interactive) {
@@ -274,14 +281,14 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		console.log(chalk.magenta(`Generated HTML report: ${outDir}/index.html`));
 	};
 
-	compare.result = function(){
-		for(const [status, file, filename, title] of tests){
-			if(status !== "passed"){
+	compare.result = function() {
+		for (const [status, file, filename, title] of tests) {
+			if (status !== "passed") {
 				return 1;
 			}
 		}
 		return 0;
-	}
+	};
 
 	return compare;
 };
