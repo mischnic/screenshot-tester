@@ -1,6 +1,7 @@
 let interactive = process.argv[2] === "--interactive" || process.argv[2] === "-i";
 
-const test = require("..")({outDir: __dirname+"/snapshots", interactive});
+process.chdir(__dirname);
+const test = require("..")({outDir: "snapshots", interactive});
 
 (async function(){
 	// await test("../libui/build/out/test", "Main Window", {raw: true});

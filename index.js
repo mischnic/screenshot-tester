@@ -49,7 +49,7 @@ const wait = t =>
 		setTimeout(() => res(), t);
 	});
 
-async function screenshot(title, filename, raw, file) {
+function screenshot(title, filename, raw, file) {
 	if (process.platform === "darwin") {
 		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, raw ? path.basename(file) : "node", "-t", title, "-f", filename]);
 	} else if (process.platform === "win32") {
@@ -94,23 +94,39 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 			} else {
 				proc = spawn("node", [file]);
 			}
+			proc.stderr.on('data', function(buf) {
+				const d = buf.toString("utf8");
+				if(d.indexOf("get 0x0") === -1){
+					console.error(chalk.red(d));
+				}
+			});
+
 			await wait(delayLocal + (process.platform === "win32" ? 600 : 100));
 
-			async function makeScreenshot() {
-				return await screenshot(title, temp, rawLocal, file).catch(e => {
+			function makeScreenshot(retry = true) {
+				let d;
+				try{
+					return screenshot(title, temp, rawLocal, file);
+				} catch(e){
 					if (e.stdout && e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
-						return false;
+						if(retry) {
+							console.log(`${chalk.yellow("Retrying")}: ${filename}`);
+							return makeScreenshot(false);
+						} else {
+							return false;
+						}
 					} else {
+						console.log(e)
 						throw e;
 					}
-				});
+				}
 			}
 
-			if ((await makeScreenshot()) === false) {
-				console.log(`${chalk.yellow("Retrying")}: ${filename}`);
-				if ((await makeScreenshot()) === false) {
-					throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?");
-				}
+			let screenshotOutput = makeScreenshot();
+			if (screenshotOutput === false) {
+				throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?");
+			} else {
+				console.log(screenshotOutput.toString("utf8"));
 			}
 
 			proc.kill("SIGINT");
@@ -120,7 +136,6 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				fs.copyFileSync(temp, reference);
 			} else {
 				const same = await looksSame(reference, temp, process.platform === "win32" ? { tolerance: 60 } : {});
-
 				if (same) {
 					console.log(`${chalk.green("Passed")}: ${path.basename(file)} - "${title}"`);
 					tests.push(["passed", file, filename, title]);

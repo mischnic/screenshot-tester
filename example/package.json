@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "libui-node": "^0.1.0"
+    "libui-node": "parro-it/libui-node#0_2_0"
   }
 }

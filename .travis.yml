@@ -24,11 +24,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip3 install click pyobjc-framework-Quartz ; fi
 
 install:
-  - export DISPLAY=':99.0'
-  - 
-  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &  fi
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then ( sudo Xvfb :99 -ac -screen 0 1024x768x8; echo ok )& fi
   - yarn install
   - cd example && yarn install
 
-script: node index.js
+script: xvfb-run --server-args="-screen 0 1024x768x24" node index.js

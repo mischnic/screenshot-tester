@@ -59,7 +59,7 @@ def screenshot_window(application_name: str, title: str='', filename: str='', wi
 
     else:
         filename = filename if filename else _filename(application_name, title)
-        print(take_screenshot(window, filename))
+        take_screenshot(window, filename)
 
 
 if __name__ == "__main__":
