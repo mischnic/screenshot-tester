@@ -24,4 +24,4 @@ install:
   - yarn install
   - cd example && yarn install
 
-script: node example/index.js
+script: node index.js
