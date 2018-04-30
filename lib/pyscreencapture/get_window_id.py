@@ -45,7 +45,6 @@ def gen_window_ids(parent: str, title: str='', options: str=user_options_str, re
     parent, title = parent.lower(), title.lower()
 
     for num, owner, name in gen_ids_from_info(windows):
-      print(num, owner, name)
       if parent in owner.lower():
           if title:
               if title in name.lower():

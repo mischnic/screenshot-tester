@@ -14,7 +14,8 @@
     "lint": "prettier --use-tabs --tab-width=4 --print-width 1000 --write index.js"
   },
   "devDependencies": {
-    "looks-same": "^3.3.0"
+    "looks-same": "^3.3.0",
+    "now-travis": "^1.2.0"
   },
   "dependencies": {
     "chalk": "^2.4.1",
