@@ -14,11 +14,11 @@
     "lint": "prettier --use-tabs --tab-width=4 --print-width 1000 --write index.js"
   },
   "devDependencies": {
-    "looks-same": "^3.3.0"
+    "prettier": "^1.12.1"
   },
   "dependencies": {
+    "blink-diff": "preceptorjs/blink-diff#gamma",
     "chalk": "^2.4.1",
-    "prettier": "^1.12.1",
     "prompt-confirm": "^1.2.0"
   }
 }

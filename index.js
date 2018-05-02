@@ -3,12 +3,9 @@ const { spawn, execFileSync } = require("child_process");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const createDiff = promisify(require("looks-same").createDiff);
-const looksSame = promisify(require("looks-same"));
+const BlinkDiff = require("blink-diff");
 const Confirm = require("prompt-confirm");
 const chalk = require("chalk");
-
-const tolerance = 7.5;
 
 function getOSVersion() {
 	if (process.platform == "win32") {
@@ -140,20 +137,35 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				console.log(`${chalk.yellow("Creating new test")}: ${filename}.png`);
 				fs.copyFileSync(temp, reference);
 			} else {
-				const same = await looksSame(reference, temp, { tolerance });
-				if (same) {
+				const diff = new BlinkDiff({
+					imageAPath: temp,
+					imageBPath: reference,
+					composition: false,
+					outputMaskOpacity: 0.9,
+
+					delta: 100, // Distance between the color coordinates in the 4 dimensional color-space that will not trigger a difference.
+					perceptual: true,
+					thresholdType: BlinkDiff.THRESHOLD_PERCENT,
+					threshold: 0.01,
+
+					imageOutputPath: temp.replace(/\.png$/, "_diff.png")
+				});
+
+				const r = await new Promise((res, rej) => {
+					diff.run(function(error, result) {
+						if (error) {
+							rej(error);
+						} else {
+							res(result);
+						}
+					});
+				});
+				if (diff.hasPassed(r.code)) {
 					console.log(`${chalk.green("Passed")}: ${path.basename(file)} - "${title}"`);
 					tests.push(["passed", file, filename, title]);
 				} else {
 					console.log(`${chalk.red("Failed")}: ${path.basename(file)} - "${title}", see ${temp.replace(/\.png$/, "_diff.png")}`);
 					tests.push(["failed", file, filename, title]);
-					await createDiff({
-						reference: reference,
-						current: temp,
-						diff: temp.replace(/\.png$/, "_diff.png"),
-						highlightColor: "#ff0000",
-						tolerance
-					});
 
 					if (interactive) {
 						const answer = await new Confirm({
@@ -168,7 +180,6 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 					}
 				}
 			}
-			// }
 		} catch (e) {
 			if (proc) {
 				proc.kill("SIGINT");
@@ -210,15 +221,15 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				text-align: center;
 			}
 
-			tr.failed > td:last-child > div > img:last-child {
+			tr > td:last-child > div > img:last-child {
 				display: none;
 			}
 
-			tr.failed > td:last-child > div:hover > img:first-child {
+			tr > td:last-child > div:hover > img:first-child {
 				display: none;
 			}
 
-			tr.failed > td:last-child > div:hover > img:last-child {
+			tr > td:last-child > div:hover > img:last-child {
 				display: initial;
 			}
 
@@ -228,6 +239,10 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 
 			.failed, .error {
 				background-color: orangered;
+			}
+
+			img {
+				max-width: 100%;
 			}
 
 		</style>
@@ -248,15 +263,15 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				</tr>
 				${tests
 					.map(([status, file, filename, title]) => {
-						if (status === "passed" || status === "error") {
-							return `
-						<tr class="${status}">
-							<td colspan="2">
-								<img src="${r}/${filename}.png">
-							</td>
-						</tr>`;
-						} else if (status === "failed") {
-							return `
+						// if (status === "passed" || status === "error") {
+						// 	return `
+						// <tr class="${status}">
+						// 	<td colspan="2">
+						// 		<img src="${r}/${filename}.png">
+						// 	</td>
+						// </tr>`;
+						// } else if (status === "failed") {
+						return `
 						<tr class="${status}">
 							<td>
 								<img src="${r}/${filename}.png">
@@ -268,7 +283,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 								</div>
 							</td>
 						</tr>`;
-						}
+						// }
 					})
 					.join("\n")}
 			</tbody>
