@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "libui-node": "parro-it/libui-node#0_2_0"
+    "libui-node": "^0.2.0-rc1"
   },
   "devDependencies": {
     "now": "^11.1.7"
