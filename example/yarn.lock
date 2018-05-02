@@ -403,9 +403,9 @@ libui-download@^1.1.0:
     request "^2.85.0"
     tar "^4.4.0"
 
-libui-node@parro-it/libui-node#0_2_0:
-  version "0.1.0"
-  resolved "https://codeload.github.com/parro-it/libui-node/tar.gz/ab47e03a3b65274e42f361fb4a41e5b87767e2cb"
+libui-node@^0.2.0-rc1:
+  version "0.2.0-rc1"
+  resolved "https://registry.yarnpkg.com/libui-node/-/libui-node-0.2.0-rc1.tgz#ccb73b8078127320acf1a4a50466d8676889aa13"
   dependencies:
     "@mischnic/async-hooks" "^0.0.4"
     autogypi "^0.2.2"
