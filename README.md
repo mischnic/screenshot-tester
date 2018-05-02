@@ -71,9 +71,13 @@ test.generateHTML = function(){}
 - `delay`: As above, but only for this call.
 - `raw`: As above, but only for this call.
 
-### `test.generateHTML()``
+### `test.generateHTML()`
 
 This will generate a HTML report (see example image) at `${outDir}/report.html`.
+
+## Requirements
+
+- **macOS**: Python 3 and `pip install click pyobjc-framework-Quartz`
 
 ## Bundled projects
 
