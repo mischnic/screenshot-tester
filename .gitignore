@@ -1,3 +1,4 @@
-example/snapshots/
+example/snapshots/temp
+example/snapshots/index.html
 node_modules/
 __pycache__/

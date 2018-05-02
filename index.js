@@ -8,6 +8,8 @@ const looksSame = promisify(require("looks-same"));
 const Confirm = require("prompt-confirm");
 const chalk = require("chalk");
 
+const tolerance = 7.5;
+
 function getOSVersion() {
 	if (process.platform == "win32") {
 		// https://stackoverflow.com/a/44916050/2352201
@@ -49,7 +51,7 @@ const wait = t =>
 		setTimeout(() => res(), t);
 	});
 
-async function screenshot(title, filename, raw, file) {
+function screenshot(title, filename, raw, file) {
 	if (process.platform === "darwin") {
 		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, raw ? path.basename(file) : "node", "-t", title, "-f", filename]);
 	} else if (process.platform === "win32") {
@@ -94,22 +96,41 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 			} else {
 				proc = spawn("node", [file]);
 			}
+			proc.stderr.on("data", function(buf) {
+				const d = buf.toString("utf8").trim();
+				if (d.indexOf("get 0x0") === -1 || d.split("\n").length > 1) {
+					console.error(chalk.red(d));
+				}
+			});
+
 			await wait(delayLocal + (process.platform === "win32" ? 600 : 100));
 
-			async function makeScreenshot() {
-				return await screenshot(title, temp, rawLocal, file).catch(e => {
-					if (e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
-						return false;
+			function makeScreenshot(retry = true) {
+				let d;
+				try {
+					return screenshot(title, temp, rawLocal, file);
+				} catch (e) {
+					if (e.stdout && e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
+						if (retry) {
+							console.log(`${chalk.yellow("Retrying")}: ${filename}`);
+							return makeScreenshot(false);
+						} else {
+							return false;
+						}
 					} else {
+						console.log(e);
 						throw e;
 					}
-				});
+				}
 			}
 
-			if ((await makeScreenshot()) === false) {
-				console.log(`${chalk.yellow("Retrying")}: ${filename}`);
-				if ((await makeScreenshot()) === false) {
-					throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?");
+			let screenshotOutput = makeScreenshot();
+			if (screenshotOutput === false) {
+				throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?");
+			} else {
+				const d = screenshotOutput.toString("utf8");
+				if (d) {
+					console.log(d);
 				}
 			}
 
@@ -119,8 +140,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				console.log(`${chalk.yellow("Creating new test")}: ${filename}.png`);
 				fs.copyFileSync(temp, reference);
 			} else {
-				const same = await looksSame(reference, temp, process.platform === "win32" ? { tolerance: 60 } : {});
-
+				const same = await looksSame(reference, temp, { tolerance });
 				if (same) {
 					console.log(`${chalk.green("Passed")}: ${path.basename(file)} - "${title}"`);
 					tests.push(["passed", file, filename, title]);
@@ -131,7 +151,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 						reference: reference,
 						current: temp,
 						diff: temp.replace(/\.png$/, "_diff.png"),
-						highlightColor: "#ff0000"
+						highlightColor: "#ff0000",
+						tolerance
 					});
 
 					if (interactive) {
@@ -160,6 +181,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 	}
 
 	compare.generateHTML = function() {
+		const r = path.relative(outDir, referenceFolder);
+		const t = path.relative(outDir, tempFolder);
 		const html = `<!DOCTYPE html>
 	<html>
 	<head>
@@ -229,19 +252,19 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 							return `
 						<tr class="${status}">
 							<td colspan="2">
-								<img src="${referenceFolder}/${filename}.png">
+								<img src="${r}/${filename}.png">
 							</td>
 						</tr>`;
 						} else if (status === "failed") {
 							return `
 						<tr class="${status}">
 							<td>
-								<img src="${referenceFolder}/${filename}.png">
+								<img src="${r}/${filename}.png">
 							</td>
 							<td>
 								<div>
-									<img src="${tempFolder}/${filename}.png">
-									<img src="${tempFolder}/${filename}_diff.png">
+									<img src="${t}/${filename}.png">
+									<img src="${t}/${filename}_diff.png">
 								</div>
 							</td>
 						</tr>`;
@@ -253,8 +276,17 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 	</body>
 	</html>
 	`;
-		fs.writeFileSync(`${outDir}/report.html`, html);
-		console.log(chalk.magenta(`Generated HTML report: ${outDir}/report.html`));
+		fs.writeFileSync(`${outDir}/index.html`, html);
+		console.log(chalk.magenta(`Generated HTML report: ${outDir}/index.html`));
+	};
+
+	compare.result = function() {
+		for (const [status, file, filename, title] of tests) {
+			if (status !== "passed") {
+				return 1;
+			}
+		}
+		return 0;
 	};
 
 	return compare;
