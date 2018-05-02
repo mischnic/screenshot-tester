@@ -17,7 +17,7 @@
     "prettier": "^1.12.1"
   },
   "dependencies": {
-    "blink-diff": "preceptorjs/blink-diff#gamma",
+    "blink-diff": "^1.0.13",
     "chalk": "^2.4.1",
     "prompt-confirm": "^1.2.0"
   }

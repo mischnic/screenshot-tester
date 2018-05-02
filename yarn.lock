@@ -257,9 +257,9 @@ bcrypt-pbkdf@^1.0.0:
   dependencies:
     tweetnacl "^0.14.3"
 
-blink-diff@preceptorjs/blink-diff#gamma:
-  version "1.0.14"
-  resolved "https://codeload.github.com/preceptorjs/blink-diff/tar.gz/9a0d7ef95668cebceb9c0ab49fbb31536f51416b"
+blink-diff@^1.0.13:
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/blink-diff/-/blink-diff-1.0.13.tgz#80e3df69de804b30d40c70f041e983841ecda899"
   dependencies:
     pngjs-image "~0.11.5"
     preceptor-core "~0.10.0"

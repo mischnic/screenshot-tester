@@ -77,7 +77,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		fs.mkdirSync(tempFolder);
 	}
 
-	async function compare(file, title, { delay: delayLocal, raw: rawLocal } = {}) {
+	async function compare(file, title, { delay: delayLocal, raw: rawLocal, delta = 20 } = {}) {
 		rawLocal = typeof rawLocal === "undefined" ? raw : rawLocal;
 		delayLocal = typeof delayLocal === "undefined" ? delay : delayLocal;
 		let proc;
@@ -143,8 +143,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 					composition: false,
 					outputMaskOpacity: 0.9,
 
-					delta: 100, // Distance between the color coordinates in the 4 dimensional color-space that will not trigger a difference.
-					perceptual: true,
+					delta, // Distance between the color coordinates in the 4 dimensional color-space that will not trigger a difference.
+					// perceptual: true,
 					thresholdType: BlinkDiff.THRESHOLD_PERCENT,
 					threshold: 0.01,
 

@@ -52,7 +52,7 @@ const test = require("screenshot-tester")({
         delay = 0
     });
 
-async function test(file, title, {delay = 0, raw = false}){}
+async function test(file, title, {delay = 0, raw = false, delta = 20}){}
 
 test.generateHTML = function(){}
 ```
@@ -70,6 +70,7 @@ test.generateHTML = function(){}
 - `title`: The title of the window to be captured.
 - `delay`: As above, but only for this call.
 - `raw`: As above, but only for this call.
+- `delta`: How insensitive the color comparison is.
 
 ### `test.generateHTML()`
 
