@@ -54,7 +54,7 @@ function screenshot(title, filename, raw, file) {
 	} else if (process.platform === "win32") {
 		return execFileSync(`${__dirname}\\lib\\screenshot-cmd\\screenshot.exe`, ["-wt", title, "-o", filename]);
 	} else {
-		throw Error("Platform not supported! Feel free to contribute at https://github.com/mischnic/screenshot-tester !");
+		return execFileSync("import", ["-window", title, filename]);
 	}
 }
 
@@ -100,7 +100,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				}
 			});
 
-			await wait(delayLocal + (process.platform === "win32" ? 600 : 100));
+			await wait(delayLocal + (process.platform === "win32" ? 600 : process.platform === "linux" ? 1500 : 100));
 
 			function makeScreenshot(retry = true) {
 				let d;

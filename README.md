@@ -79,6 +79,7 @@ This will generate a HTML report (see example image) at `${outDir}/report.html`.
 ## Requirements
 
 - **macOS**: Python 3 and `pip install click pyobjc-framework-Quartz`
+- **Linux**: ImageMagick
 
 ## Bundled projects
 
