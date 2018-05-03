@@ -1,0 +1,21 @@
+version: 1.0.{build}
+image: Visual Studio 2015
+
+environment:
+  matrix:
+    - nodejs_version: "10"
+    - nodejs_version: "9"
+  NOW_TOKEN:
+    secure: hTCahB+WhZAzqXg2hoKa6BbNrphYvmIc0jcrYZh9vP4=
+
+install:
+  - ps: Install-Product node $env:nodejs_version x64
+  - npm install
+  - cd example
+  - npm install
+
+
+test_script:
+  - node index.js
+  - cd snapshots
+  - npx now --public --token $(NOW_TOKEN)
