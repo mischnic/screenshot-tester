@@ -18,4 +18,6 @@ install:
 test_script:
   - node index.js
   - cd snapshots
-  - npx now --public --token $(NOW_TOKEN)
+  - npx now --public --token %NOW_TOKEN%
+
+build: off
