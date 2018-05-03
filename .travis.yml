@@ -29,7 +29,7 @@ before_script:
 script:
   - node index.js
 after_script:
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then cd snapshots && npx now --public --token $NOW_TOKEN; fi
+  - cd snapshots && npx now --public --token $NOW_TOKEN
 
 env:
   global:

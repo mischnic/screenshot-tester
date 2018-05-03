@@ -77,7 +77,9 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		fs.mkdirSync(tempFolder);
 	}
 
+	console.log("OS:", getOSVersion());
 	async function compare(file, title, { delay: delayLocal, raw: rawLocal, delta = 20 } = {}) {
+
 		rawLocal = typeof rawLocal === "undefined" ? raw : rawLocal;
 		delayLocal = typeof delayLocal === "undefined" ? delay : delayLocal;
 		let proc;
@@ -135,6 +137,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 
 			if (!fs.existsSync(reference)) {
 				console.log(`${chalk.yellow("Creating new test")}: ${filename}.png`);
+				tests.push(["new", file, filename, title]);
 				fs.copyFileSync(temp, reference);
 			} else {
 				const diff = new BlinkDiff({
@@ -192,8 +195,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 	}
 
 	compare.generateHTML = function() {
-		const r = path.relative(outDir, referenceFolder);
-		const t = path.relative(outDir, tempFolder);
+		const r = path.relative(outDir, referenceFolder).replace(/\\/g,"/");
+		const t = path.relative(outDir, tempFolder).replace(/\\/g,"/");
 		const html = `<!DOCTYPE html>
 	<html>
 	<head>
@@ -241,6 +244,10 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				background-color: orangered;
 			}
 
+			.new {
+				background-color: yellow;
+			}
+
 			img {
 				max-width: 100%;
 			}
@@ -253,6 +260,9 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		</h1>
 		<div class="center">
 			Hover over the screenshots on the right to highlight the differing areas in red.
+			<br>
+			<br>
+			(${getOSVersion()})
 		</div>
 		<br>
 		<table>
@@ -263,15 +273,15 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				</tr>
 				${tests
 					.map(([status, file, filename, title]) => {
-						// if (status === "passed" || status === "error") {
-						// 	return `
-						// <tr class="${status}">
-						// 	<td colspan="2">
-						// 		<img src="${r}/${filename}.png">
-						// 	</td>
-						// </tr>`;
-						// } else if (status === "failed") {
-						return `
+						if (status === "new") {
+							return `
+						<tr class="${status}">
+							<td colspan="2">
+								<img src="${r}/${filename}.png">
+							</td>
+						</tr>`;
+						} else {
+							return `
 						<tr class="${status}">
 							<td>
 								<img src="${r}/${filename}.png">
@@ -283,7 +293,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 								</div>
 							</td>
 						</tr>`;
-						// }
+						}
 					})
 					.join("\n")}
 			</tbody>

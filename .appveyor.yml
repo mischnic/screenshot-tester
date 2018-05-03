@@ -1,5 +1,5 @@
 version: 1.0.{build}
-image: Visual Studio 2015
+image: Visual Studio 2017
 
 environment:
   matrix:
@@ -10,13 +10,15 @@ environment:
 
 install:
   - ps: Install-Product node $env:nodejs_version x64
-  - npm install
+  - yarn install
   - cd example
-  - npm install
+  - yarn install
 
 
 test_script:
   - node index.js
+
+on_finish:
   - cd snapshots
   - npx now --public --token %NOW_TOKEN%
 
