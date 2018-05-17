@@ -90,7 +90,7 @@ str.appendAttributed('And multiple attributes at once!',
 str.insertAttributed('Styled Strings\n', 0, FontAttribute.newWeight(libui.textWeight.bold), FontAttribute.newSize(24));
 
 function handlerDraw(area, p) {
-	const font = checkbox.checked ? new libui.FontDescriptor('Georgia', 14, libui.textWeight.normal, libui.textItalic.normal, libui.textStretch.normal) : fontButton.getFont();
+	const font = checkbox.checked ? new libui.FontDescriptor('Georgia', 12, libui.textWeight.normal, libui.textItalic.normal, libui.textStretch.normal) : fontButton.getFont();
 
 	const layout = new libui.DrawTextLayout(str, font, p.getAreaWidth(), align.getSelected());
 
@@ -122,6 +122,7 @@ function main() {
 	hbox.append(vbox, false);
 
 	fontButton = new libui.UiFontButton();
+	fontButton.enabled = false;
 	fontButton.onChanged(redraw);
 	vbox.append(fontButton, false);
 
@@ -131,6 +132,7 @@ function main() {
 
 	checkbox = new libui.UiCheckbox();
 	checkbox.text = 'Use Georgia instead of button';
+	checkbox.checked = true;
 	checkbox.onToggled(() => {
 		fontButton.enabled = !checkbox.checked;
 		redraw();

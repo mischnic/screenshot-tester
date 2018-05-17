@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "libui-node": "^0.2.0-rc1"
+    "libui-node": "^0.2.0"
   },
   "devDependencies": {
     "now": "^11.1.7"

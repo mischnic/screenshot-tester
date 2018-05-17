@@ -52,9 +52,9 @@ const test = require("screenshot-tester")({
         delay = 0
     });
 
-async function test(file, title, {delay = 0, raw = false, delta = 20}){}
+async function test(file, title, {delay = 0, raw = false, delta = 20}){};
 
-test.generateHTML = function(){}
+function test.generateHTML(){};
 ```
 
 ### Parameters
