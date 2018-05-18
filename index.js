@@ -58,7 +58,7 @@ function screenshot(title, filename, raw, file) {
 	}
 }
 
-tests = [];
+const tests = [];
 
 module.exports = function({ outDir = ".", raw = false, interactive = false, delay = 0, accuracy = "0.01%" } = {}) {
 	const referenceFolder = `${outDir}/reference/${getOSVersion()}`;
