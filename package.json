@@ -1,6 +1,6 @@
 {
   "name": "screenshot-tester",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tester for UI regressions",
   "repository": "https://github.com/mischnic/screenshot-tester.git",
   "bugs": {
@@ -9,8 +9,8 @@
   "author": "Niklas Mischkulnig",
   "main": "lib.js",
   "license": "MIT",
-  "engines" : {
-    "node" : ">=6"
+  "engines": {
+    "node": ">=6"
   },
   "scripts": {
     "start": "node index.js",
