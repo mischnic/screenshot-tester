@@ -11,6 +11,8 @@ const BlinkDiff = require("blink-diff");
 const Confirm = require("prompt-confirm");
 const chalk = require("chalk");
 
+const copyFileSync = typeof fs.copyFileSync === "function" ? fs.copyFileSync : (from, to) => fs.writeFileSync(to, fs.readFileSync(from));
+
 function getOSVersion() {
 	if (process.platform == "win32") {
 		// https://stackoverflow.com/a/44916050/2352201
@@ -125,7 +127,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 				if (!fs.existsSync(reference)) {
 					console.log(`${chalk.yellow("Creating new test")}: ${filename}.png`);
 					tests.push(["new", file, filename, title]);
-					fs.copyFileSync(temp, reference);
+					copyFileSync(temp, reference);
 				} else {
 					const diff = new BlinkDiff({
 						imageAPath: temp,
@@ -164,7 +166,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 							}).run();
 
 							if (answer) {
-								fs.copyFileSync(temp, reference);
+								copyFileSync(temp, reference);
 								console.log(`\tUpdated: ${path.basename(file)}`);
 							}
 						}
