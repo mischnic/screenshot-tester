@@ -1,6 +1,6 @@
 {
   "name": "screenshot-tester",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Tester for UI regressions",
   "repository": "https://github.com/mischnic/screenshot-tester.git",
   "bugs": {
