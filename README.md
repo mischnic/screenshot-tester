@@ -49,10 +49,11 @@ const test = require("screenshot-tester")({
         outDir = ".",
         raw = false,
         interactive = false,
-        delay = 0
+        delay = 0,
+        accuracy = "0.01%"
     });
 
-async function test(file, title, {delay = 0, raw = false, delta = 20}){};
+async function test(file, title, {delay, raw, delta = 20}){};
 
 function test.generateHTML(){};
 ```
@@ -60,17 +61,19 @@ function test.generateHTML(){};
 ### Parameters
 
 #### `require("screenshot-tester")(...)`
-- `outDir`: The folder in which the screenshots will be saved (see above).
-- `raw`: Set to `true` to run a binary instead of a node script. It is applied to all following `test()` calls.
-- `interactive`: Whether to prompt the user if the reference image should be updated if a test failed.
-- `delay`: Additional delay after starting the application (in ms). It is applied to all following `test()` calls.
+- `outDir`: *Optional* - The folder in which the screenshots will be saved (see above).
+- `raw`: *Optional* - Set to `true` to run a binary instead of a node script. It is applied to all following `test()` calls.
+- `interactive`: *Optional* - Whether to prompt the user if the reference image should be updated if a test failed.
+- `delay`: *Optional* - Additional delay after starting the application (in ms). It is applied to all following `test()` calls.
+- `accuracy`: *Optional* - The threshold (`500` or `"500"` => 500px, `"0.01%"` => 0.01%)
 
 ### `test(...)`
 - `file`: The node script/binary to test.
 - `title`: The title of the window to be captured.
-- `delay`: As above, but only for this call.
-- `raw`: As above, but only for this call.
-- `delta`: How insensitive the color comparison is.
+- `delay`: *Optional* - As above, but only for this call.
+- `raw`: *Optional* - As above, but only for this call.
+- `delta`: *Optional* - How insensitive the color comparison is.
+- `accuracy`: *Optional* - As above, but only for this call.
 
 ### `test.generateHTML()`
 

@@ -7,13 +7,20 @@
     "url": "https://github.com/mischnic/screenshot-tester/issues"
   },
   "author": "Niklas Mischkulnig",
-  "main": "index.js",
+  "main": "lib.js",
   "license": "MIT",
+  "engines" : {
+    "node" : ">=6"
+  },
   "scripts": {
     "start": "node index.js",
-    "lint": "prettier --use-tabs --tab-width=4 --print-width 1000 --write index.js"
+    "lint": "prettier --use-tabs --tab-width=4 --print-width 1000 --write index.js",
+    "build": "babel index.js -o lib.js",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
     "prettier": "^1.12.1"
   },
   "dependencies": {

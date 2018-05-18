@@ -60,7 +60,7 @@ function screenshot(title, filename, raw, file) {
 
 tests = [];
 
-module.exports = function({ outDir = ".", raw = false, interactive = false, delay = 0 } = {}) {
+module.exports = function({ outDir = ".", raw = false, interactive = false, delay = 0, accuracy = "0.01%" } = {}) {
 	const referenceFolder = `${outDir}/reference/${getOSVersion()}`;
 	const tempFolder = `${outDir}/temp`;
 
@@ -78,9 +78,10 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 	}
 
 	console.log("OS:", getOSVersion());
-	async function compare(file, title, { delay: delayLocal, raw: rawLocal, delta = 20 } = {}) {
+	async function compare(file, title, { delay: delayLocal, raw: rawLocal, delta = 20, accuracy: accuracyLocal } = {}) {
 		rawLocal = typeof rawLocal === "undefined" ? raw : rawLocal;
 		delayLocal = typeof delayLocal === "undefined" ? delay : delayLocal;
+		accuracyLocal = typeof accuracyLocal === "undefined" ? accuracy : accuracyLocal;
 		let proc;
 		const filename = path.basename(file).replace(/\s/g, "_"); //+"_"+i
 		try {
@@ -147,8 +148,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 
 					delta, // Distance between the color coordinates in the 4 dimensional color-space that will not trigger a difference.
 					// perceptual: true,
-					thresholdType: BlinkDiff.THRESHOLD_PERCENT,
-					threshold: 0.01,
+					thresholdType: String(accuracyLocal).indexOf("%") !== -1 ? BlinkDiff.THRESHOLD_PERCENT : BlinkDiff.THRESHOLD_PIXEL,
+					threshold: Number(String(accuracyLocal).replace("%", "")),
 
 					imageOutputPath: temp.replace(/\.png$/, "_diff.png")
 				});

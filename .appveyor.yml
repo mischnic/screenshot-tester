@@ -4,7 +4,8 @@ image: Visual Studio 2017
 environment:
   matrix:
     - nodejs_version: "10"
-    - nodejs_version: "9"
+    - nodejs_version: "8"
+    - nodejs_version: "6"
   NOW_TOKEN:
     secure: hTCahB+WhZAzqXg2hoKa6BbNrphYvmIc0jcrYZh9vP4=
 
