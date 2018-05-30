@@ -63,9 +63,44 @@ function screenshot(title, filename, raw, file) {
 	}
 }
 
+const TEST_PASSED = "PASSED";
+const TEST_FAILED = "FAILED";
+const TEST_MISSING = "MISSING";
+const TEST_ERROR = "ERROR";
+const TEST_REPORT = "REPORT";
+const TEST_OS = "OS";
+const TEST_RETRY = "RETRY";
+
+function defaultLogger(type, file, err) {
+	switch (type) {
+		case TEST_MISSING:
+			console.log(`${chalk.yellow("Creating new test")}: ${file}`);
+			break;
+		case TEST_FAILED:
+			console.log(`${chalk.red("Failed")}: ${file}, see ${err}`);
+			break;
+		case TEST_PASSED:
+			console.log(`${chalk.green("Passed")}: ${file}`);
+			break;
+		case TEST_ERROR:
+			console.error(chalk.red(`Error: ${file}`));
+			console.error("\t", err);
+			break;
+		case TEST_REPORT:
+			console.log(chalk.magenta(`Generated HTML report: ${file}`));
+			break;
+		case TEST_OS:
+			console.log(`OS: ${file}`);
+			break;
+		case TEST_RETRY:
+			console.log(`${chalk.yellow("Retrying")}: ${message}`);
+			break;
+	}
+}
+
 const tests = [];
 
-module.exports = function ({ outDir = ".", raw = false, interactive = false, delay = 0, accuracy = "0.01%" } = {}) {
+module.exports = function ({ outDir = ".", raw = false, interactive = false, delay = 0, accuracy = "0.01%", logger = defaultLogger } = {}) {
 	let compare = (() => {
 		var _ref = _asyncToGenerator(function* (file, title, { delay: delayLocal, raw: rawLocal, delta = 20, accuracy: accuracyLocal } = {}) {
 			rawLocal = typeof rawLocal === "undefined" ? raw : rawLocal;
@@ -100,7 +135,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 					} catch (e) {
 						if (e.stdout && e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
 							if (retry) {
-								console.log(`${chalk.yellow("Retrying")}: ${filename}`);
+								logger(TEST_RETRY, `${path.basename(file)} - "${title}"`);
 								return makeScreenshot(false);
 							} else {
 								return false;
@@ -125,7 +160,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 				proc.kill("SIGINT");
 
 				if (!fs.existsSync(reference)) {
-					console.log(`${chalk.yellow("Creating new test")}: ${filename}.png`);
+					logger(TEST_MISSING, `${path.basename(file)} - "${title}"`);
 					tests.push(["new", file, filename, title]);
 					copyFileSync(temp, reference);
 				} else {
@@ -153,10 +188,10 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 						});
 					});
 					if (diff.hasPassed(r.code)) {
-						console.log(`${chalk.green("Passed")}: ${path.basename(file)} - "${title}"`);
+						logger(TEST_PASSED, `${path.basename(file)} - "${title}"`);
 						tests.push(["passed", file, filename, title]);
 					} else {
-						console.log(`${chalk.red("Failed")}: ${path.basename(file)} - "${title}", see ${temp.replace(/\.png$/, "_diff.png")}`);
+						logger(TEST_FAILED, `${path.basename(file)} - "${title}"`, temp.replace(/\.png$/, "_diff.png"));
 						tests.push(["failed", file, filename, title]);
 
 						if (interactive) {
@@ -176,9 +211,11 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 				if (proc) {
 					proc.kill("SIGINT");
 				}
-				console.error(chalk.red(`error: ${file} - "${title}"`));
-				console.error("\t", e.message);
-				if (e.stdout) console.error("\t", e.stdout.toString("utf8"));
+				let msg = e.message;
+				if (e.stdout) {
+					msg += "\n" + e.stdout.toString("utf8");
+				}
+				logger(TEST_ERROR, `${file} - "${title}"`, msg);
 				tests.push(["error", file, filename, title]);
 			}
 		});
@@ -204,7 +241,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 		fs.mkdirSync(tempFolder);
 	}
 
-	console.log("OS:", getOSVersion());
+	logger(TEST_OS, getOSVersion());
 
 
 	compare.generateHTML = function () {
@@ -313,7 +350,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 	</html>
 	`;
 		fs.writeFileSync(`${outDir}/index.html`, html);
-		console.log(chalk.magenta(`Generated HTML report: ${outDir}/index.html`));
+		logger(TEST_REPORT, `${outDir}/index.html`);
 	};
 
 	compare.result = function () {
@@ -327,3 +364,5 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 
 	return compare;
 };
+
+module.exports.defaultLogger = defaultLogger;

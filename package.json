@@ -13,7 +13,6 @@
     "node": ">=6"
   },
   "scripts": {
-    "start": "node index.js",
     "lint": "prettier --use-tabs --tab-width=4 --print-width 1000 --write index.js",
     "build": "babel index.js -o lib.js",
     "prepublishOnly": "npm run build"

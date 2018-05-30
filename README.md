@@ -50,7 +50,8 @@ const test = require("screenshot-tester")({
         raw = false,
         interactive = false,
         delay = 0,
-        accuracy = "0.01%"
+        accuracy = "0.01%",
+        logger = require("screenshot-tester").defaultLogger
     });
 
 async function test(file, title, {delay, raw, delta = 20}){};
@@ -66,6 +67,7 @@ function test.generateHTML(){};
 - `interactive`: *Optional* - Whether to prompt the user if the reference image should be updated if a test failed.
 - `delay`: *Optional* - Additional delay after starting the application (in ms). It is applied to all following `test()` calls.
 - `accuracy`: *Optional* - The threshold (`500` or `"500"` => 500px, `"0.01%"` => 0.01%)
+- `logger`: *Optional* - A function to call for logging: `function(type, file, error){}`. Types: `PASSED, FAILED, MISSING, ERROR, REPORT, OS, RETRY`
 
 ### `test(...)`
 - `file`: The node script/binary to test.

@@ -1,5 +1,8 @@
 {
   "private": true,
+  "scripts": {
+    "test": "node test.js"
+  },
   "dependencies": {
     "libui-node": "^0.2.0"
   },
