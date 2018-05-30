@@ -23,7 +23,7 @@ before_test:
   - ps: Set-ScreenResolution 1920 1080
 
 test_script:
-  - node index.js
+  - yarn test
 
 on_finish:
   - cd snapshots

@@ -30,7 +30,7 @@ before_script:
   - if [ "${TRAVIS_OS_NAME}" = "osx" ];   then sudo Xvfb :99 -ac -screen 0 1280x800x32  & fi
   - sleep 3
 script:
-  - node index.js
+  - yarn test
 after_script:
   - cd snapshots && npx now --public --token $NOW_TOKEN
 
