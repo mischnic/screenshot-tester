@@ -25,7 +25,9 @@
   "dependencies": {
     "blink-diff": "^1.0.13",
     "chalk": "^2.4.1",
-    "prompt-confirm": "^1.2.0"
+    "prompt-confirm": "^1.2.0",
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5"
   },
   "files": [
     "lib/"

@@ -16,6 +16,7 @@ const test = require("..")({ outDir: "snapshots", interactive });
 	await test("src/node-pad.js", "Node Pad");
 
 	test.generateHTML();
+	// test.pushToServer("http://localhost:3000", "mischnic/screenshot-tester", 2);
 
 	process.exitCode = test.result();
 })();

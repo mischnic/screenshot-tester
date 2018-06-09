@@ -57,6 +57,8 @@ const test = require("screenshot-tester")({
 async function test(file, title, {delay, raw, delta = 20}){};
 
 function test.generateHTML(){};
+
+async function test.pushToServer(host, repoId, issue) {};
 ```
 
 ### Parameters
@@ -67,7 +69,7 @@ function test.generateHTML(){};
 - `interactive`: *Optional* - Whether to prompt the user if the reference image should be updated if a test failed.
 - `delay`: *Optional* - Additional delay after starting the application (in ms). It is applied to all following `test()` calls.
 - `accuracy`: *Optional* - The threshold (`500` or `"500"` => 500px, `"0.01%"` => 0.01%)
-- `logger`: *Optional* - A function to call for logging: `function(type, file, error){}`. Types: `PASSED, FAILED, MISSING, ERROR, REPORT, OS, RETRY`
+- `logger`: *Optional* - A function to call for logging: `function(type, file, error){}`. Types: `PASSED, FAILED, MISSING, ERROR, REPORT, OS, RETRY, PUSH`
 
 ### `test(...)`
 - `file`: The node script/binary to test (or an array to pass arguments).
@@ -80,6 +82,14 @@ function test.generateHTML(){};
 ### `test.generateHTML()`
 
 This will generate a HTML report (see example image) at `${outDir}/report.html`.
+
+### `test.pushToServer(...)`
+
+Send the result this test to a [screenshot-tester-server](https://github.com/mischnic/screenshot-tester-server) instance.
+
+- `host`: The domain of the server (e.g. `https://example.com`)
+- `repoId`: The GitHub repo of the current pull request(e.g. `owner/repo-name`)
+- `issue`: The PR number (e.g. `2`)
 
 ## Requirements
 

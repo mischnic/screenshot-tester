@@ -6,6 +6,7 @@ const path = require("path");
 const BlinkDiff = require("blink-diff");
 const Confirm = require("prompt-confirm");
 const chalk = require("chalk");
+const request = require("request-promise-native");
 
 const copyFileSync = typeof fs.copyFileSync === "function" ? fs.copyFileSync : (from, to) => fs.writeFileSync(to, fs.readFileSync(from));
 
@@ -65,6 +66,7 @@ const TEST_FAILED = "FAILED";
 const TEST_MISSING = "MISSING";
 const TEST_ERROR = "ERROR";
 const TEST_REPORT = "REPORT";
+const TEST_PUSH = "PUSH";
 const TEST_OS = "OS";
 const TEST_RETRY = "RETRY";
 
@@ -85,6 +87,14 @@ function defaultLogger(type, file, err) {
 			break;
 		case TEST_REPORT:
 			console.log(chalk.magenta(`Generated HTML report: ${file}`));
+			break;
+		case TEST_PUSH:
+			if (err) {
+				console.error(chalk.red(`Sending report to: ${file} failed`));
+				console.error("\t", err);
+			} else {
+				console.log(chalk.magenta(`Sent report to: ${file}`));
+			}
 			break;
 		case TEST_OS:
 			console.log(`OS: ${file}`);
@@ -234,7 +244,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		}
 	}
 
-	compare.generateHTML = function() {
+	compare.generateHTML = function(silent = false) {
 		const r = path.relative(outDir, referenceFolder).replace(/\\/g, "/");
 		const t = path.relative(outDir, tempFolder).replace(/\\/g, "/");
 		const html = `<!DOCTYPE html>
@@ -342,7 +352,37 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 	</html>
 	`;
 		fs.writeFileSync(`${outDir}/index.html`, html);
-		logger(TEST_REPORT, `${outDir}/index.html`);
+		if (!silent) logger(TEST_REPORT, `${outDir}/index.html`);
+	};
+
+	compare.pushToServer = async function(host, repoId, issue) {
+		compare.generateHTML(true);
+		const data = tests.reduce(
+			(acc, [status, file, filename, title]) => {
+				const ref = `${referenceFolder}/${filename}.png`;
+				const temp = `${tempFolder}/${filename}.png`;
+				const diff = `${tempFolder}/${filename}_diff.png`;
+				acc[`${filename}:${ref}:ref`] = fs.createReadStream(ref);
+				acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
+				acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
+				return acc;
+			},
+			{ ":index.html:": fs.createReadStream(`${outDir}/index.html`) }
+		);
+
+		try {
+			await request.post({
+				url: host + "/" + repoId + "/" + issue,
+				qs: {
+					os: getOSVersion(),
+					failed: tests.filter(v => v[0] !== "passed").map(v => v[2])
+				},
+				formData: data
+			});
+			logger(TEST_PUSH, `${host} - ${repoId}/${issue}`);
+		} catch (e) {
+			logger(TEST_PUSH, `${host} - ${repoId}/${issue}`, e);
+		}
 	};
 
 	compare.result = function() {
