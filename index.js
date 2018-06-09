@@ -90,14 +90,13 @@ function defaultLogger(type, file, err) {
 			console.log(`OS: ${file}`);
 			break;
 		case TEST_RETRY:
-			console.log(`${chalk.yellow("Retrying")}: ${message}`);
+			console.log(`${chalk.yellow("Retrying")}: ${file}`);
 			break;
 	}
 }
 
-const tests = [];
-
 module.exports = function({ outDir = ".", raw = false, interactive = false, delay = 0, accuracy = "0.01%", logger = defaultLogger } = {}) {
+	const tests = [];
 	const referenceFolder = `${outDir}/reference/${getOSVersion()}`;
 	const tempFolder = `${outDir}/temp`;
 
@@ -115,11 +114,13 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 	}
 
 	logger(TEST_OS, getOSVersion());
-	async function compare(file, title, { delay: delayLocal, raw: rawLocal, delta = 20, accuracy: accuracyLocal } = {}) {
+	async function compare(fileWithArgs, title, { delay: delayLocal, raw: rawLocal, delta = 20, accuracy: accuracyLocal } = {}) {
 		rawLocal = typeof rawLocal === "undefined" ? raw : rawLocal;
 		delayLocal = typeof delayLocal === "undefined" ? delay : delayLocal;
 		accuracyLocal = typeof accuracyLocal === "undefined" ? accuracy : accuracyLocal;
 		let proc;
+		fileWithArgs = [].concat(fileWithArgs);
+		const file = fileWithArgs[0];
 		const filename = path.basename(file).replace(/\s/g, "_"); //+"_"+i
 		try {
 			// for(let i = 0; i < 1; i++){
@@ -128,9 +129,9 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 			const temp = `${tempFolder}/${filename}.png`;
 
 			if (rawLocal) {
-				proc = spawn(file);
+				proc = spawn(fileWithArgs[0], fileWithArgs.slice(1));
 			} else {
-				proc = spawn("node", [file]);
+				proc = spawn("node", fileWithArgs);
 			}
 			proc.stderr.on("data", function(buf) {
 				const d = buf.toString("utf8").trim();

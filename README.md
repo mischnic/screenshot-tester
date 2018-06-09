@@ -70,7 +70,7 @@ function test.generateHTML(){};
 - `logger`: *Optional* - A function to call for logging: `function(type, file, error){}`. Types: `PASSED, FAILED, MISSING, ERROR, REPORT, OS, RETRY`
 
 ### `test(...)`
-- `file`: The node script/binary to test.
+- `file`: The node script/binary to test (or an array to pass arguments).
 - `title`: The title of the window to be captured.
 - `delay`: *Optional* - As above, but only for this call.
 - `raw`: *Optional* - As above, but only for this call.
