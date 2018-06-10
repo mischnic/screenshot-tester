@@ -355,9 +355,11 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		if (!silent) logger(TEST_REPORT, `${outDir}/index.html`);
 	};
 
-	compare.pushToServer = async function(host, repoId, issue) {
+	compare.pushToServer = async function(host, repoId, issue, onlyFailed = false, osAppend = "") {
 		compare.generateHTML(true);
-		const data = tests.reduce(
+		const failed = tests.filter(v => v[0] !== "passed");
+
+		const data = (onlyFailed ? failed : tests).reduce(
 			(acc, [status, file, filename, title]) => {
 				const ref = `${referenceFolder}/${filename}.png`;
 				const temp = `${tempFolder}/${filename}.png`;
@@ -374,8 +376,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 			await request.post({
 				url: host + "/" + repoId + "/" + issue,
 				qs: {
-					os: getOSVersion(),
-					failed: tests.filter(v => v[0] !== "passed").map(v => v[2])
+					os: getOSVersion() + osAppend,
+					failed: failed.map(v => v[2])
 				},
 				formData: data
 			});

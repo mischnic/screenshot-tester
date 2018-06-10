@@ -58,7 +58,7 @@ async function test(file, title, {delay, raw, delta = 20}){};
 
 function test.generateHTML(){};
 
-async function test.pushToServer(host, repoId, issue) {};
+async function test.pushToServer(host, repoId, issue, onlyFailed, osAppend) {};
 ```
 
 ### Parameters
@@ -90,6 +90,8 @@ Send the result this test to a [screenshot-tester-server](https://github.com/mis
 - `host`: The domain of the server (e.g. `https://example.com`)
 - `repoId`: The GitHub repo of the current pull request(e.g. `owner/repo-name`)
 - `issue`: The PR number (e.g. `2`)
+- `onlyFailed`: Whether to push only failed tests
+- `osAppend`: String to append to the reported OS
 
 ## Requirements
 
