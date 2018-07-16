@@ -359,18 +359,15 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		compare.generateHTML(true);
 		const failed = tests.filter(v => v[0] !== "passed");
 
-		const data = (onlyFailed ? failed : tests).reduce(
-			(acc, [status, file, filename, title]) => {
-				const ref = `${referenceFolder}/${filename}.png`;
-				const temp = `${tempFolder}/${filename}.png`;
-				const diff = `${tempFolder}/${filename}_diff.png`;
-				acc[`${filename}:${ref}:ref`] = fs.createReadStream(ref);
-				acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
-				acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
-				return acc;
-			},
-			{ ":index.html:": fs.createReadStream(`${outDir}/index.html`) }
-		);
+		const data = (onlyFailed ? failed : tests).reduce((acc, [status, file, filename, title]) => {
+			const ref = `${referenceFolder}/${filename}.png`;
+			const temp = `${tempFolder}/${filename}.png`;
+			const diff = `${tempFolder}/${filename}_diff.png`;
+			acc[`${filename}:${ref}:ref`] = fs.createReadStream(ref);
+			acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
+			acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
+			return acc;
+		}, onlyFailed ? {} : { [`:${outDir}/index.html:`]: fs.createReadStream(`${outDir}/index.html`) });
 
 		try {
 			await request.post({

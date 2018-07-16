@@ -25,5 +25,7 @@ test_script:
   - yarn test
 
 on_finish:
-  - cd snapshots
-  - npx now --public --token %NOW_TOKEN%
+ - if defined NOW_TOKEN (
+      cd snapshots &&
+      npx now --public --token %NOW_TOKEN%
+    )

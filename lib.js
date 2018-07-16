@@ -379,7 +379,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 				acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
 				acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
 				return acc;
-			}, { ":index.html:": fs.createReadStream(`${outDir}/index.html`) });
+			}, onlyFailed ? {} : { [`:${outDir}/index.html:`]: fs.createReadStream(`${outDir}/index.html`) });
 
 			try {
 				yield request.post({
