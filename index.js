@@ -355,27 +355,26 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		if (!silent) logger(TEST_REPORT, `${outDir}/index.html`);
 	};
 
-	compare.pushToServer = async function(host, repoId, issue) {
+	compare.pushToServer = async function(host, repoId, issue, onlyFailed = false, osAppend = "") {
 		compare.generateHTML(true);
-		const data = tests.reduce(
-			(acc, [status, file, filename, title]) => {
-				const ref = `${referenceFolder}/${filename}.png`;
-				const temp = `${tempFolder}/${filename}.png`;
-				const diff = `${tempFolder}/${filename}_diff.png`;
-				acc[`${filename}:${ref}:ref`] = fs.createReadStream(ref);
-				acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
-				acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
-				return acc;
-			},
-			{ ":index.html:": fs.createReadStream(`${outDir}/index.html`) }
-		);
+		const failed = tests.filter(v => v[0] !== "passed");
+
+		const data = (onlyFailed ? failed : tests).reduce((acc, [status, file, filename, title]) => {
+			const ref = `${referenceFolder}/${filename}.png`;
+			const temp = `${tempFolder}/${filename}.png`;
+			const diff = `${tempFolder}/${filename}_diff.png`;
+			acc[`${filename}:${ref}:ref`] = fs.createReadStream(ref);
+			acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
+			acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
+			return acc;
+		}, onlyFailed ? {} : { [`:${outDir}/index.html:`]: fs.createReadStream(`${outDir}/index.html`) });
 
 		try {
 			await request.post({
 				url: host + "/" + repoId + "/" + issue,
 				qs: {
-					os: getOSVersion(),
-					failed: tests.filter(v => v[0] !== "passed").map(v => v[2])
+					os: getOSVersion() + osAppend,
+					failed: failed.map(v => v[2])
 				},
 				formData: data
 			});

@@ -16,7 +16,14 @@ const test = require("..")({ outDir: "snapshots", interactive });
 	await test("src/node-pad.js", "Node Pad");
 
 	test.generateHTML();
-	// test.pushToServer("http://localhost:3000", "mischnic/screenshot-tester", 2);
+
+	const PR_REPO = process.env.TRAVIS_REPO_SLUG || process.env.APPVEYOR_REPO_NAME;
+	const PR_NUM = process.env.TRAVIS_PULL_REQUEST || process.env.APPVEYOR_PULL_REQUEST_NUMBER;
+	const NODE_MAJOR = process.version.substr(1).split(".")[0];
+	if (PR_REPO && Number(PR_NUM)) {
+		test.pushToServer("https://screenshot-tester-server.mischnic.ml", PR_REPO, PR_NUM, NODE_MAJOR !== "10", " - Node " + NODE_MAJOR);
+	}
+	// test.pushToServer("http://localhost:3000", "mischnic/screenshot-tester", 2, process.version.substr(1).split(".")[0] !== "10");
 
 	process.exitCode = test.result();
 })();

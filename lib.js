@@ -365,9 +365,13 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 	};
 
 	compare.pushToServer = (() => {
-		var _ref2 = _asyncToGenerator(function* (host, repoId, issue) {
+		var _ref2 = _asyncToGenerator(function* (host, repoId, issue, onlyFailed = false, osAppend = "") {
 			compare.generateHTML(true);
-			const data = tests.reduce(function (acc, [status, file, filename, title]) {
+			const failed = tests.filter(function (v) {
+				return v[0] !== "passed";
+			});
+
+			const data = (onlyFailed ? failed : tests).reduce(function (acc, [status, file, filename, title]) {
 				const ref = `${referenceFolder}/${filename}.png`;
 				const temp = `${tempFolder}/${filename}.png`;
 				const diff = `${tempFolder}/${filename}_diff.png`;
@@ -375,16 +379,14 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 				acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
 				acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
 				return acc;
-			}, { ":index.html:": fs.createReadStream(`${outDir}/index.html`) });
+			}, onlyFailed ? {} : { [`:${outDir}/index.html:`]: fs.createReadStream(`${outDir}/index.html`) });
 
 			try {
 				yield request.post({
 					url: host + "/" + repoId + "/" + issue,
 					qs: {
-						os: getOSVersion(),
-						failed: tests.filter(function (v) {
-							return v[0] !== "passed";
-						}).map(function (v) {
+						os: getOSVersion() + osAppend,
+						failed: failed.map(function (v) {
 							return v[2];
 						})
 					},
