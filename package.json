@@ -27,7 +27,8 @@
     "chalk": "^2.4.1",
     "prompt-confirm": "^1.2.0",
     "request": "^2.87.0",
-    "request-promise-native": "^1.0.5"
+    "request-promise-native": "^1.0.5",
+    "terminate": "^2.1.0"
   },
   "files": [
     "lib/"

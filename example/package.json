@@ -4,9 +4,6 @@
     "test": "node test.js"
   },
   "dependencies": {
-    "libui-node": "^0.2.0"
-  },
-  "devDependencies": {
-    "now": "^11.1.7"
+    "libui-napi": "parro-it/libui-napi"
   }
 }

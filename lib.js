@@ -11,6 +11,12 @@ const BlinkDiff = require("blink-diff");
 const Confirm = require("prompt-confirm");
 const chalk = require("chalk");
 const request = require("request-promise-native");
+const rawTerminate = require("terminate");
+const terminate = pid => new Promise((res, rej) => {
+	rawTerminate(pid, err => {
+		if (err) rej(err);else res();
+	});
+});
 
 const copyFileSync = typeof fs.copyFileSync === "function" ? fs.copyFileSync : (from, to) => fs.writeFileSync(to, fs.readFileSync(from));
 
@@ -167,7 +173,8 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 					}
 				}
 
-				proc.kill("SIGINT");
+				// proc.kill("SIGINT");
+				yield terminate(proc.pid);
 
 				if (!fs.existsSync(reference)) {
 					logger(TEST_MISSING, `${path.basename(file)} - "${title}"`);
@@ -219,7 +226,8 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 				}
 			} catch (e) {
 				if (proc) {
-					proc.kill("SIGINT");
+					yield terminate(proc.pid);
+					// proc.kill("SIGINT");
 				}
 				let msg = e.message;
 				if (e.stdout) {
@@ -375,9 +383,9 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 				const ref = `${referenceFolder}/${filename}.png`;
 				const temp = `${tempFolder}/${filename}.png`;
 				const diff = `${tempFolder}/${filename}_diff.png`;
-				acc[`${filename}:${ref}:ref`] = fs.createReadStream(ref);
-				acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
-				acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
+				if (fs.existsSync(ref)) acc[`${filename}:${ref}:ref`] = fs.createReadStream(ref);
+				if (fs.existsSync(temp)) acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
+				if (fs.existsSync(diff)) acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
 				return acc;
 			}, onlyFailed ? {} : { [`:${outDir}/index.html:`]: fs.createReadStream(`${outDir}/index.html`) });
 
