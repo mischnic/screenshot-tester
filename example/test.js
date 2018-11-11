@@ -21,9 +21,9 @@ const test = require("..")({ outDir: "snapshots", interactive });
 	const PR_NUM = process.env.TRAVIS_PULL_REQUEST || process.env.APPVEYOR_PULL_REQUEST_NUMBER;
 	const NODE_MAJOR = process.version.substr(1).split(".")[0];
 	if (PR_REPO && Number(PR_NUM)) {
-		test.pushToServer("https://screenshot-tester-server.mischnic.ml", PR_REPO, PR_NUM, NODE_MAJOR !== "11", " - Node " + NODE_MAJOR);
+		test.pushToServer("https://sts.mischnic.ml", PR_REPO, PR_NUM, NODE_MAJOR !== "11", " - Node " + NODE_MAJOR);
 	}
-	// test.pushToServer("http://localhost:3000", "mischnic/screenshot-tester", 2, false, " - Node " + NODE_MAJOR);
+	// test.pushToServer("localhost:3000", "mischnic/screenshot-tester", 2, false, " - Node " + NODE_MAJOR);
 
 	process.exitCode = test.result();
 })();
