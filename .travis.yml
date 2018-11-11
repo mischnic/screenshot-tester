@@ -4,6 +4,7 @@ os:
 dist: trusty
 language: node_js
 node_js:
+  - '11'
   - '10'
   - '8'
 sudo: false
@@ -30,9 +31,3 @@ before_script:
   - sleep 3
 script:
   - yarn test
-after_script:
-  - cd snapshots && npx now --public --token $NOW_TOKEN
-
-env:
-  global:
-    secure: XiZSrGfWCOWviGAU9A0CFVtfnNgzgeK0uWmZmxZK7I0jLFalDlPg39tZmAeBugMkgecLyOGypuaHP0aQJn4FuV4+SLFhYnbf9jLk4AHBZuBXoT1V91OSUSxEKT15eiNEjaxN/IyA8tRWEI66CpznT3HpYTHHkd2b4lBIFPlTvX6jCNOB60+YZt90zAEWplC7aNySAR7+YO4X/XJYYoqWAeLIUTCw29P6cFkuk1azRjweq128uFmUTnIYM4DhcmMcPGQOp1qkDYTg2JQnsOxYXYYc6Tv6rJK66U2//Fst3ycNjBX7s7Ytv8PgrFD2FDa6YpDHAPu1+c0nwgmiGhO0fJwIIlf43S60vL9b+Lqc5XcrHFVS5lDGCzQ7GETWhBa2fUp8tlWCs7AG5A8VtzVNUdlPu+fipS15k0/UGDuXXLW92nMBS/rqcUgT9RJ2f/lYMucROwwx7N51JWurJGARxXdLm7b7xzC9fCj9Uf6kD5TjEK5KiOFoD6e4jfFbQdQJiktx5pc/rnAIIkEJH8lse41Rqkf0y+2OT7rcMcg0/PR09cLI/LRw0R2c+pzmGAqfIWKhZsz0959q/qzaTrT7ZPWR/i5vtIErLrmbsdn+4XU5RdwfHZWfEqoe4xphjErEIg1j5NY8wiUvGfdSCbYXfEqEQOGrB1p9NC5FddTJinI=
