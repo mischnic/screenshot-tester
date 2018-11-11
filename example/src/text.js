@@ -161,7 +161,7 @@ function redraw() {
 }
 
 function main() {
-	mainwin = new libui.UiWindow("textDrawArea Example", 640, 480, 1);
+	mainwin = new libui.UiWindow("libui textDrawArea Example", 640, 480, 1);
 	mainwin.margined = true;
 	mainwin.onClosing(() => {
 		libui.stopLoop();

@@ -365,6 +365,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		if (!silent) logger(TEST_REPORT, `${outDir}/index.html`);
 	};
 
+	let uploadFailed = false;
+
 	compare.pushToServer = async function(host, repoId, issue, onlyFailed = false, osAppend = "") {
 		compare.generateHTML(true);
 		const failed = tests.filter(v => v[0] !== "passed");
@@ -380,7 +382,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 		}, onlyFailed ? {} : { [`:${outDir}/index.html:`]: fs.createReadStream(`${outDir}/index.html`) });
 
 		try {
-			await request.post({
+			const resp = await request.post({
 				url: host + "/" + repoId + "/" + issue,
 				qs: {
 					os: getOSVersion() + osAppend,
@@ -388,15 +390,17 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				},
 				formData: data
 			});
-			logger(TEST_PUSH, `${host} - ${repoId}/${issue}`);
+			if (resp) logger(TEST_PUSH, "\n"+resp);
+			else logger(TEST_PUSH, `${host} - ${repoId}/${issue}`);
 		} catch (e) {
-			logger(TEST_PUSH, `${host} - ${repoId}/${issue}`, e);
+			uploadFailed = true;
+			logger(TEST_PUSH, `${host} - ${repoId}/${issue}`, e.message);
 		}
 	};
 
 	compare.result = function() {
 		for (const [status, file, filename, title] of tests) {
-			if (status !== "passed") {
+			if (status !== "passed" || uploadFailed) {
 				return 1;
 			}
 		}
