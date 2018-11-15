@@ -1,6 +1,7 @@
 os:
   - linux
   - osx
+  - windows
 dist: trusty
 language: node_js
 node_js:
@@ -16,14 +17,17 @@ addons:
     - xvfb
     - at-spi2-core
 
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "windows" ]; then choco install python2 -y; fi
+
 install:
   - yarn install
   - cd example && yarn install
 
 before_script:
-  - export DISPLAY=:99.0
-  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then      Xvfb :99 -ac -screen 0 1920x1080x24 > /dev/null 2>&1 &  fi
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ];   then sudo Xvfb :99 -ac -screen 0 1280x800x32  & fi
+  - if [ "$TRAVIS_OS_NAME" != "windows" ]; then export DISPLAY=':99.0'          ; fi
+  - if [ "$TRAVIS_OS_NAME"  = "linux"   ]; then      Xvfb :99 -ac -screen 0 1920x1080x24 > /dev/null 2>&1 & fi
+  - if [ "$TRAVIS_OS_NAME"  = "osx"     ]; then sudo Xvfb :99 -ac -screen 0 1280x800x32 & fi
   - sleep 3
 script:
   - yarn test
