@@ -403,7 +403,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 				if (fs.existsSync(temp)) acc[`${filename}:${temp}:res`] = fs.createReadStream(temp);
 				if (fs.existsSync(diff)) acc[`${filename}:${diff}:diff`] = fs.createReadStream(diff);
 				return acc;
-			}, onlyFailed ? {} : { [`:${outDir}/index.html:`]: fs.createReadStream(`${outDir}/index.html`) });
+			}, { [`:${outDir}/index.html:`]: fs.createReadStream(`${outDir}/index.html`) });
 
 			try {
 				const resp = yield request.post({
