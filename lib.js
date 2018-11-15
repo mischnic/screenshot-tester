@@ -3,7 +3,8 @@
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 const { promisify } = require("util");
-const { spawn, execFileSync } = require("child_process");
+const child_process = require("child_process");
+const rimraf = require("rimraf");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -19,6 +20,14 @@ const terminate = pid => new Promise((res, rej) => {
 });
 
 const copyFileSync = typeof fs.copyFileSync === "function" ? fs.copyFileSync : (from, to) => fs.writeFileSync(to, fs.readFileSync(from));
+
+function execute(file, args) {
+	return new Promise((res, rej) => {
+		child_process.execFile(file, args, { encoding: "utf8" }, (error, stdout, stderr) => {
+			if (error) rej({ error, stdout, stderr });else res({ stdout, stderr });
+		});
+	});
+}
 
 function getOSVersion() {
 	if (process.platform == "win32") {
@@ -62,11 +71,11 @@ const wait = t => new Promise((res, rej) => {
 
 function screenshot(title, filename, raw, file) {
 	if (process.platform === "darwin") {
-		return execFileSync("python3", [`${__dirname}/lib/pyscreencapture/screencapture.py`, raw ? path.basename(file) : "node", "-t", title, "-f", filename]);
+		return execute(`${__dirname}/lib/screenshot/screenshot`, [raw ? path.basename(file) : "node", "-t", title, "-o", filename]);
 	} else if (process.platform === "win32") {
-		return execFileSync(`${__dirname}\\lib\\screenshot-cmd\\screenshot.exe`, ["-wt", title, "-o", filename]);
+		return execute(`${__dirname}\\lib\\screenshot-cmd\\screenshot.exe`, ["-wt", title, "-o", filename]);
 	} else {
-		return execFileSync("import", ["-window", title, filename]);
+		return execute("import", ["-window", title, filename]);
 	}
 }
 
@@ -123,17 +132,45 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 			let proc;
 			fileWithArgs = [].concat(fileWithArgs);
 			const file = fileWithArgs[0];
-			const filename = path.basename(file).replace(/\s/g, "_"); //+"_"+i
+			const filename = path.basename(file).replace(/\s/g, "_");
+			const actualDelay = delayLocal + (process.platform === "win32" ? 600 : process.platform === "linux" ? 1500 : 400);
 			try {
-				// for(let i = 0; i < 1; i++){
+				let makeScreenshot = (() => {
+					var _ref2 = _asyncToGenerator(function* (retry = true) {
+						let d;
+						try {
+							yield screenshot(title, temp, rawLocal, file);
+							return true;
+						} catch (e) {
+							const { error, stdout, stderr } = e;
+
+							if (stderr && /Could not find a window by '.*' titled '.*'/.test(stderr)) {
+								if (retry) {
+									yield wait(actualDelay);
+									logger(TEST_RETRY, `${path.basename(file)} - "${title}"`);
+									return makeScreenshot(false);
+								} else {
+									return false;
+								}
+							} else {
+								console.log(error, stderr);
+								throw error;
+							}
+						}
+					});
+
+					return function makeScreenshot() {
+						return _ref2.apply(this, arguments);
+					};
+				})();
 
 				const reference = `${referenceFolder}/${filename}.png`;
 				const temp = `${tempFolder}/${filename}.png`;
 
 				if (rawLocal) {
-					proc = spawn(fileWithArgs[0], fileWithArgs.slice(1));
+					proc = child_process.spawn(fileWithArgs[0], fileWithArgs.slice(1));
 				} else {
-					proc = spawn("node", fileWithArgs);
+					proc = child_process.spawn("node", fileWithArgs);
 				}
 				proc.stderr.on("data", function (buf) {
 					const d = buf.toString("utf8").trim();
@@ -142,38 +179,13 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 					}
 				});
 
-				yield wait(delayLocal + (process.platform === "win32" ? 600 : process.platform === "linux" ? 1500 : 100));
+				yield wait(actualDelay);
 
-				function makeScreenshot(retry = true) {
-					let d;
-					try {
-						return screenshot(title, temp, rawLocal, file);
-					} catch (e) {
-						if (e.stdout && e.stdout.toString("utf8").match(/Window with parent `.*` and title `.*` not found\./)) {
-							if (retry) {
-								logger(TEST_RETRY, `${path.basename(file)} - "${title}"`);
-								return makeScreenshot(false);
-							} else {
-								return false;
-							}
-						} else {
-							console.log(e);
-							throw e;
-						}
-					}
-				}
-
-				let screenshotOutput = makeScreenshot();
-				if (screenshotOutput === false) {
+				let screenshotOutput = yield makeScreenshot();
+				if (!screenshotOutput) {
 					throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?");
-				} else {
-					const d = screenshotOutput.toString("utf8");
-					if (d) {
-						console.log(d);
-					}
 				}
 
-				// proc.kill("SIGINT");
 				yield terminate(proc.pid);
 
 				if (!fs.existsSync(reference)) {
@@ -258,6 +270,8 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 	}
 	if (!fs.existsSync(tempFolder)) {
 		fs.mkdirSync(tempFolder);
+	} else {
+		rimraf.sync(path.join(tempFolder, "*"));
 	}
 
 	logger(TEST_OS, getOSVersion());
@@ -375,7 +389,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 	let uploadFailed = false;
 
 	compare.pushToServer = (() => {
-		var _ref2 = _asyncToGenerator(function* (host, repoId, issue, onlyFailed = false, osAppend = "") {
+		var _ref3 = _asyncToGenerator(function* (host, repoId, issue, onlyFailed = false, osAppend = "") {
 			compare.generateHTML(true);
 			const failed = tests.filter(function (v) {
 				return v[0] !== "passed";
@@ -410,7 +424,7 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 		});
 
 		return function (_x3, _x4, _x5) {
-			return _ref2.apply(this, arguments);
+			return _ref3.apply(this, arguments);
 		};
 	})();
 

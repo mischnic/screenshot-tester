@@ -17,14 +17,14 @@ const test = require("..")({ outDir: "snapshots", interactive });
 
 	test.generateHTML();
 
-	const PR_REPO = process.env.TRAVIS_REPO_SLUG || process.env.APPVEYOR_REPO_NAME;
+	const REPO = process.env.TRAVIS_REPO_SLUG || process.env.APPVEYOR_REPO_NAME;
 	const PR_NUM = process.env.TRAVIS_PULL_REQUEST || process.env.APPVEYOR_PULL_REQUEST_NUMBER;
 	const COMMIT = process.env.TRAVIS_COMMIT || process.env.APPVEYOR_REPO_COMMIT;
 	const NODE_MAJOR = process.version.substr(1).split(".")[0];
-	if (PR_REPO && Number(PR_NUM)) {
-		test.pushToServer("https://sts.mischnic.ml", PR_REPO, PR_NUM, NODE_MAJOR !== "11", " - Node " + NODE_MAJOR);
-	} else if (COMMIT) {
-		test.pushToServer("https://sts.mischnic.ml", PR_REPO, COMMIT, NODE_MAJOR !== "11", " - Node " + NODE_MAJOR);
+	if (REPO && Number(PR_NUM)) {
+		test.pushToServer("https://sts.mischnic.ml", REPO, PR_NUM, NODE_MAJOR !== "11", " - Node " + NODE_MAJOR);
+	} else if (REPO && COMMIT) {
+		test.pushToServer("https://sts.mischnic.ml", REPO, COMMIT, NODE_MAJOR !== "11", " - Node " + NODE_MAJOR);
 	}
 	// test.pushToServer("http://localhost:3000", "mischnic/screenshot-tester", "2", false, " - Node " + NODE_MAJOR);
 	// test.pushToServer("http://localhost:3000", "mischnic/screenshot-tester", "43afd1409f60cdb38ba7c3aa34ab22f9eca1a66e", false, " - Node " + NODE_MAJOR);
