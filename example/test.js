@@ -26,6 +26,7 @@ const test = require("..")({ outDir: "snapshots", interactive });
 	} else if (REPO && COMMIT) {
 		test.pushToServer("https://sts.mischnic.ml", REPO, COMMIT, NODE_MAJOR !== "11", " - Node " + NODE_MAJOR);
 	}
+
 	// test.pushToServer("http://localhost:3000", "mischnic/screenshot-tester", "2", false, " - Node " + NODE_MAJOR);
 	// test.pushToServer("http://localhost:3000", "mischnic/screenshot-tester", "43afd1409f60cdb38ba7c3aa34ab22f9eca1a66e", false, " - Node " + NODE_MAJOR);
 

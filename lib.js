@@ -407,7 +407,10 @@ module.exports = function ({ outDir = ".", raw = false, interactive = false, del
 							return v[2];
 						})
 					},
-					formData: data
+					formData: data,
+					qsStringifyOptions: {
+						arrayFormat: "repeat"
+					}
 				});
 				if (resp) logger(TEST_PUSH, "\n" + resp);else logger(TEST_PUSH, `${host} - ${repoId}/${issue}`);
 			} catch (e) {
