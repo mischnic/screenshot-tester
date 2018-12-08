@@ -8,6 +8,7 @@ node_js:
   - '11'
   - '10'
   - '8'
+cache: yarn
 sudo: false
 addons:
   apt:

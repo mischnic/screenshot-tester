@@ -8,14 +8,6 @@ const BlinkDiff = require("blink-diff");
 const Confirm = require("prompt-confirm");
 const chalk = require("chalk");
 const request = require("request-promise-native");
-const rawTerminate = require("terminate");
-const terminate = pid =>
-	new Promise((res, rej) => {
-		rawTerminate(pid, err => {
-			if (err) rej(err);
-			else res();
-		});
-	});
 
 const copyFileSync = typeof fs.copyFileSync === "function" ? fs.copyFileSync : (from, to) => fs.writeFileSync(to, fs.readFileSync(from));
 
@@ -160,7 +152,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 			if (rawLocal) {
 				proc = child_process.spawn(fileWithArgs[0], fileWithArgs.slice(1));
 			} else {
-				proc = child_process.spawn("node", fileWithArgs);
+				proc = child_process.fork(fileWithArgs[0], fileWithArgs.slice(1), { silent: true });
 			}
 			proc.stderr.on("data", function(buf) {
 				const d = buf.toString("utf8").trim();
@@ -199,7 +191,7 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				throw new Error("Couldn't make a screenshot, does the window with the specified title actually open?");
 			}
 
-			await terminate(proc.pid);
+			proc.kill("SIGKILL");
 
 			if (!fs.existsSync(reference)) {
 				logger(TEST_MISSING, `${path.basename(file)} - "${title}"`);
@@ -250,9 +242,8 @@ module.exports = function({ outDir = ".", raw = false, interactive = false, dela
 				}
 			}
 		} catch (e) {
-			if (proc) {
-				await terminate(proc.pid);
-				// proc.kill("SIGINT");
+			if (proc && !proc.killed) {
+				proc.kill("SIGINT");
 			}
 			let msg = e.message;
 			if (e.stdout) {
