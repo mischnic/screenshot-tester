@@ -1,7 +1,7 @@
 os:
   - linux
   - osx
-  - windows
+  # - windows
 dist: trusty
 language: node_js
 node_js:
@@ -18,7 +18,9 @@ addons:
     - xvfb
     - at-spi2-core
 
+  # - powershell -Command "iex(((Invoke-WebRequest -URI 'https://raw.githubusercontent.com/appveyor/ci/f8bb8306668fcdea9370b25021eafb623e213210/scripts/set-screenresolution.ps1' -UseBasicParsing).Content)); Set-ScreenResolution 1920 1080"
 before_install:
+  # - if [ "$TRAVIS_OS_NAME" == "windows" ]; powershell -Command "iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/set-screenresolution.ps1')); Set-ScreenResolution 1920 1080"; fi
   - if [ "$TRAVIS_OS_NAME" == "windows" ]; then choco install python2 -y; fi
 
 install:
@@ -26,7 +28,7 @@ install:
   - cd example && yarn install
 
 before_script:
-  - if [ "$TRAVIS_OS_NAME" != "windows" ]; then export DISPLAY=':99.0'          ; fi
+  - if [ "$TRAVIS_OS_NAME" != "windows" ]; then export DISPLAY=':99.0'; fi
   - if [ "$TRAVIS_OS_NAME"  = "linux"   ]; then      Xvfb :99 -ac -screen 0 1920x1080x24 > /dev/null 2>&1 & fi
   - if [ "$TRAVIS_OS_NAME"  = "osx"     ]; then sudo Xvfb :99 -ac -screen 0 1280x800x32 & fi
   - sleep 3

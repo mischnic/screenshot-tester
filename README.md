@@ -100,5 +100,5 @@ Send the result this test to a [screenshot-tester-server](https://github.com/mis
 
 ## Bundled projects
 
-- pyscreencapture for macOS from https://github.com/thismachinechills/pyscreencapture
+- for macOS: https://github.com/mischnic/screenshot-native
 - screenshot-cmd for Windows from https://github.com/chuntaro/screenshot-cmd
