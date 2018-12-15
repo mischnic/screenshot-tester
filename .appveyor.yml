@@ -3,17 +3,15 @@ image: Visual Studio 2017
 
 environment:
   matrix:
+    - nodejs_version: "11"
     - nodejs_version: "10"
     - nodejs_version: "8"
-  NOW_TOKEN:
-    secure: hTCahB+WhZAzqXg2hoKa6BbNrphYvmIc0jcrYZh9vP4=
 
 install:
   - ps: Install-Product node $env:nodejs_version x64
   - yarn install
   - cd example
   - yarn install
-
 
 build: off
 
@@ -23,9 +21,3 @@ before_test:
 
 test_script:
   - yarn test
-
-on_finish:
- - if defined NOW_TOKEN (
-      cd snapshots &&
-      npx now --public --token %NOW_TOKEN%
-    )
